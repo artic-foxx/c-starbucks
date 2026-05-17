@@ -1,0 +1,2563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Starbucks Adventure Cafe</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: #1a472a;
+    min-height: 100vh;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ===== START SCREEN ===== */
+  #start-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    padding: 20px;
+    background: linear-gradient(180deg, #0a2f1a 0%, #1a472a 50%, #2d5a3f 100%);
+  }
+
+  .game-title-card {
+    margin-bottom: 10px;
+    animation: titleFloat 3s ease-in-out infinite;
+  }
+  @keyframes titleFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .siren-logo {
+    font-size: 90px;
+    filter: drop-shadow(0 5px 15px rgba(0,112,74,0.5));
+  }
+
+  #start-screen h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.8em;
+    background: linear-gradient(135deg, #fff, #d4e6c9, #ffd700);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+    margin-bottom: 5px;
+    letter-spacing: 1px;
+  }
+
+  .subtitle {
+    color: #a8d5a2;
+    font-size: 1.15em;
+    font-weight: 600;
+    margin-bottom: 20px;
+  }
+
+  .choose-text {
+    font-family: 'Fredoka One', cursive;
+    color: #ffd700;
+    font-size: 1.4em;
+    margin: 15px 0 12px;
+  }
+
+  .char-grid {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 620px;
+    margin: 10px auto;
+  }
+
+  .char-option {
+    width: 85px;
+    height: 85px;
+    border-radius: 16px;
+    border: 3px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(5px);
+  }
+
+  .char-option:hover {
+    transform: translateY(-4px) scale(1.05);
+    border-color: rgba(255,215,0,0.7);
+    background: rgba(255,255,255,0.15);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+  }
+  .char-option.selected {
+    border-color: #ffd700;
+    background: rgba(255,215,0,0.18);
+    transform: scale(1.08);
+    box-shadow: 0 0 20px rgba(255,215,0,0.3);
+  }
+  .char-option canvas { image-rendering: pixelated; }
+  .char-option .char-name { font-family: 'Fredoka One', cursive; color: #fff; font-size: 0.7em; margin-top: 2px; }
+
+  .btn {
+    font-family: 'Fredoka One', cursive;
+    padding: 16px 60px;
+    font-size: 1.3em;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    letter-spacing: 3px;
+    margin-top: 20px;
+  }
+  .btn:hover { transform: translateY(-3px) scale(1.04); }
+  .btn:active { transform: translateY(1px) scale(0.97); }
+  .btn-green {
+    background: linear-gradient(135deg, #00704A, #00a86e);
+    color: white;
+    box-shadow: 0 6px 0 #004a31, 0 8px 20px rgba(0,112,74,0.4);
+  }
+  .btn-green:hover { box-shadow: 0 8px 0 #004a31, 0 12px 25px rgba(0,112,74,0.5); }
+
+  .controls-info {
+    color: #a8d5a2;
+    font-size: 0.9em;
+    margin-top: 18px;
+    background: rgba(0,0,0,0.25);
+    padding: 12px 24px;
+    border-radius: 14px;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .controls-info kbd {
+    background: rgba(255,255,255,0.15);
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-family: 'Fredoka One', cursive;
+    color: #ffd700;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  /* ===== GAME SCREEN ===== */
+  #game-screen { display: none; height: 100vh; flex-direction: column; }
+
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #00704A, #005a3e);
+    padding: 8px 18px;
+    flex-shrink: 0;
+    z-index: 10;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.3);
+    border-bottom: 2px solid rgba(255,215,0,0.2);
+  }
+
+  .score-display { font-family: 'Fredoka One', cursive; color: #fff; font-size: 1em; }
+  .score-display span { color: #ffd700; }
+  .money-display { font-family: 'Fredoka One', cursive; color: #4ecdc4; font-size: 1em; }
+  .level-display { font-family: 'Fredoka One', cursive; color: #ffd700; font-size: 0.95em; }
+  .char-info { font-size: 1.4em; margin-right: 5px; }
+
+  .music-btn {
+    font-family: 'Fredoka One', cursive;
+    padding: 6px 14px;
+    font-size: 0.8em;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    transition: all 0.2s;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .music-btn:hover { background: rgba(255,255,255,0.25); }
+  .music-btn.active { background: #4ecdc4; border-color: #7eedd8; }
+
+  /* Progress Bar */
+  .progress-wrap {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: rgba(0,0,0,0.2);
+  }
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #ffd700, #4ecdc4);
+    width: 0%;
+    transition: width 0.5s;
+    border-radius: 0 2px 2px 0;
+  }
+
+  /* Store Map */
+  .store-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #8B7355;
+  }
+
+  .store-floor {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+  }
+
+  .room-tile {
+    position: absolute;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: box-shadow 0.25s, transform 0.25s;
+    border: 3px solid rgba(0,0,0,0.15);
+    cursor: default;
+    overflow: hidden;
+  }
+  .room-tile::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .room-tile .room-emoji { font-size: 2.2em; opacity: 0.65; transition: all 0.3s; }
+  .room-tile:hover .room-emoji { opacity: 1; transform: scale(1.15) rotate(3deg); }
+  .room-tile:hover { transform: scale(1.015); z-index: 3; }
+  .room-tile .room-label {
+    font-family: 'Fredoka One', cursive;
+    color: #fff;
+    font-size: 0.85em;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
+    margin-top: 4px;
+  }
+
+  .room-tile.nearby {
+    box-shadow: 0 0 20px rgba(255,215,0,0.5), inset 0 0 15px rgba(255,215,0,0.1);
+    border-color: #ffd700;
+    animation: roomPulse 1.5s ease-in-out infinite;
+  }
+  @keyframes roomPulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(255,215,0,0.5); }
+    50% { box-shadow: 0 0 30px rgba(255,215,0,0.8); }
+  }
+  .room-tile.nearby .room-label { color: #ffd700; }
+
+  /* Room Colors */
+  .room-kitchen   { background: linear-gradient(135deg, #e17055, #d63031); }
+  .room-counter   { background: linear-gradient(135deg, #fdcb6e, #e17055); }
+  .room-seating   { background: linear-gradient(135deg, #00704A, #2d6a4f); }
+  .room-magic     { background: linear-gradient(135deg, #a29bfe, #6c5ce7); }
+  .room-treasure  { background: linear-gradient(135deg, #fdcb6e, #f39c12); }
+  .room-paint     { background: linear-gradient(135deg, #fd79a8, #e84393); }
+  .room-sounds    { background: linear-gradient(135deg, #6c5ce7, #a29bfe); }
+  .room-garden    { background: linear-gradient(135deg, #55efc4, #00b894); }
+  .room-party     { background: linear-gradient(135deg, #fd79a8, #e84393); }
+  .room-pet       { background: linear-gradient(135deg, #fdcb6e, #f39c12); }
+  .room-library   { background: linear-gradient(135deg, #74b9ff, #0984e3); }
+  .room-play      { background: linear-gradient(135deg, #a29bfe, #6c5ce7); }
+  .room-dance     { background: linear-gradient(135deg, #e17055, #d63031); }
+  .room-photo     { background: linear-gradient(135deg, #636e72, #2d3436); }
+  .room-game      { background: linear-gradient(135deg, #00b894, #00cec9); }
+  .room-bath      { background: linear-gradient(135deg, #dfe6e9, #b2bec3); }
+  .room-bath .room-label { color: #333 !important; }
+
+  /* Interaction hint */
+  .interact-hint {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.75);
+    color: #ffd700;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1em;
+    padding: 10px 22px;
+    border-radius: 14px;
+    z-index: 20;
+    display: none;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,215,0,0.3);
+    animation: hintBounce 1.5s ease-in-out infinite;
+  }
+  @keyframes hintBounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(-3px); }
+  }
+
+  /* Player character */
+  .player-char {
+    position: absolute;
+    z-index: 5;
+    transition: none;
+    pointer-events: none;
+    filter: drop-shadow(2px 4px 4px rgba(0,0,0,0.45));
+  }
+
+  /* ===== ROOM SCREENS ===== */
+  .room-screen {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 50;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(3px);
+  }
+  .room-screen.active { display: flex; }
+
+  .room-panel {
+    width: 92vw;
+    max-width: 640px;
+    max-height: 88vh;
+    border-radius: 22px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.5);
+    animation: panelSlideIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid rgba(255,255,255,0.1);
+  }
+  @keyframes panelSlideIn {
+    0% { transform: scale(0.9) translateY(20px); opacity: 0; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+  }
+
+  .room-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    flex-shrink: 0;
+    background: rgba(0,0,0,0.15);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .back-btn {
+    font-family: 'Fredoka One', cursive;
+    padding: 7px 14px;
+    font-size: 0.9em;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+    transition: all 0.2s;
+  }
+  .back-btn:hover { background: rgba(255,255,255,0.3); transform: scale(1.05); }
+
+  .room-header-title { font-family: 'Fredoka One', cursive; color: #fff; font-size: 1.2em; }
+
+  .room-content { flex: 1; overflow-y: auto; padding: 15px; }
+
+  /* ===== UI COMPONENTS ===== */
+  .magic-btn {
+    font-family: 'Fredoka One', cursive;
+    padding: 11px 22px;
+    font-size: 0.95em;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    background: linear-gradient(135deg, #fd79a8, #e84393);
+    color: #fff;
+    box-shadow: 0 4px 0 #c44569, 0 6px 15px rgba(0,0,0,0.2);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    margin: 6px 4px;
+  }
+  .magic-btn:hover { transform: translateY(-2px) scale(1.04); box-shadow: 0 6px 0 #c44569, 0 10px 20px rgba(0,0,0,0.25); }
+  .magic-btn:active { transform: translateY(2px) scale(0.97); box-shadow: 0 2px 0 #c44569, 0 3px 8px rgba(0,0,0,0.15); }
+
+  .sound-btn {
+    background: rgba(255,255,255,0.92);
+    border-radius: 16px;
+    padding: 14px 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 3px solid #00b894;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  }
+  .sound-btn:hover { transform: translateY(-3px) scale(1.03); background: #fff; box-shadow: 0 6px 15px rgba(0,0,0,0.15); }
+  .sound-btn:active { transform: translateY(1px) scale(0.97); }
+  .sound-btn .sound-emoji { font-size: 2.2em; display: block; }
+  .sound-btn .sound-name { font-family: 'Fredoka One', cursive; color: #00704A; font-size: 0.85em; margin-top: 4px; }
+
+  .paint-emoji { font-size: 2em; cursor: pointer; padding: 5px; border-radius: 10px; transition: all 0.2s; }
+  .paint-emoji:hover { transform: scale(1.3) rotate(8deg); background: rgba(255,255,255,0.15); }
+
+  /* Kitchen */
+  .kitchen-bg { background: linear-gradient(180deg, #e17055, #d63031); }
+  .recipe-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 14px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    animation: popIn 0.3s ease-out;
+  }
+  @keyframes popIn { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+  .recipe-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .recipe-card-emoji { font-size: 2em; }
+  .recipe-card-name { font-family: 'Fredoka One', cursive; color: #00704A; font-size: 1em; }
+
+  .recipe-ingredients-list { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
+  .recipe-ing {
+    display: flex; align-items: center; gap: 3px;
+    background: #f0f7f0; border: 2px solid #00704A;
+    border-radius: 8px; padding: 3px 8px;
+    font-size: 0.8em; font-weight: 700;
+  }
+  .recipe-ing.done { background: #d4e6c9; border-color: #4ecdc4; opacity: 0.7; }
+
+  .ingredients-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .ing-btn {
+    background: #f8f9fa; border-radius: 12px; padding: 8px;
+    text-align: center; cursor: pointer; transition: all 0.15s;
+    border: 2px solid #e9ecef;
+  }
+  .ing-btn:hover { background: #e9ecef; transform: scale(1.05); }
+  .ing-btn .ing-emoji { font-size: 1.8em; display: block; }
+  .ing-btn .ing-label { font-size: 0.75em; color: #666; font-weight: 600; }
+
+  /* Kitchen work */
+  .kitchen-work { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  @media (min-width: 700px) { .kitchen-work { grid-template-columns: 1fr 1fr; } }
+
+  .ingredients-panel { background: rgba(255,255,255,0.95); border-radius: 16px; padding: 12px; }
+  .ingredients-panel h3 { font-family: 'Fredoka One', cursive; color: #00704A; margin-bottom: 8px; text-align: center; font-size: 1em; }
+
+  .prep-panel { background: rgba(255,255,255,0.95); border-radius: 16px; padding: 12px; text-align: center; }
+  .prep-panel h3 { font-family: 'Fredoka One', cursive; color: #00704A; margin-bottom: 8px; font-size: 1em; }
+
+  .current-cup { font-size: 60px; margin: 5px 0; }
+
+  .prep-items { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin: 8px 0; min-height: 30px; }
+  .prep-item { font-size: 1.5em; animation: popIn 0.2s; }
+
+  .action-btns { display: flex; gap: 8px; justify-content: center; margin-top: 10px; }
+  .action-btn {
+    font-family: 'Fredoka One', cursive;
+    padding: 10px 20px;
+    font-size: 0.95em;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-finish { background: #4ecdc4; color: #fff; box-shadow: 0 4px 0 #2d9aa0; }
+  .btn-finish:hover { background: #5fd8cb; }
+  .btn-trash { background: #ff6b6b; color: #fff; box-shadow: 0 4px 0 #c0392b; }
+  .btn-trash:hover { background: #ff8787; }
+
+  /* Customer cards */
+  .customer-card {
+    background: rgba(255,255,255,0.95);
+    border-radius: 16px;
+    padding: 12px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  }
+  .customer-avatar { font-size: 2.5em; }
+  .customer-info { flex: 1; }
+  .customer-name { font-family: 'Fredoka One', cursive; color: #00704A; font-size: 1em; }
+  .customer-order { font-size: 0.9em; color: #555; margin-top: 2px; }
+  .customer-mood { font-size: 2em; }
+
+  .serve-btn {
+    font-family: 'Fredoka One', cursive;
+    padding: 8px 18px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #00b894, #00cec9);
+    color: #fff;
+    cursor: pointer;
+    font-size: 0.9em;
+    box-shadow: 0 3px 0 #00886c;
+    transition: all 0.15s;
+  }
+  .serve-btn:hover { transform: scale(1.05); }
+
+  /* Queue */
+  .queue-customer {
+    background: rgba(255,255,255,0.95);
+    border-radius: 14px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .qc-avatar { font-size: 2em; }
+  .qc-name { font-family: 'Fredoka One', cursive; color: #00704A; }
+  .qc-order { font-size: 0.85em; color: #555; }
+  .take-order-btn {
+    font-family: 'Fredoka One', cursive;
+    padding: 6px 14px;
+    border: none;
+    border-radius: 8px;
+    background: #fdcb6e;
+    color: #333;
+    cursor: pointer;
+    font-size: 0.8em;
+    transition: all 0.15s;
+  }
+  .take-order-btn:hover { transform: scale(1.05); background: #f9ca5f; }
+
+  /* Magic potion */
+  .magic-bg { background: linear-gradient(180deg, #a29bfe, #6c5ce7); }
+  .magic-potion {
+    background: rgba(255,255,255,0.95);
+    border-radius: 20px;
+    padding: 20px;
+    text-align: center;
+    max-width: 500px;
+    margin: 0 auto;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+  }
+  .magic-potion h3 { font-family: 'Fredoka One', cursive; color: #6c5ce7; margin-bottom: 8px; }
+
+  .potion-cauldron { font-size: 100px; margin: 10px 0; cursor: pointer; transition: transform 0.2s; }
+  .potion-cauldron:hover { transform: scale(1.1) rotate(5deg); }
+
+  .potion-result {
+    font-family: 'Fredoka One', cursive;
+    color: #6c5ce7;
+    font-size: 1.1em;
+    min-height: 24px;
+    margin: 8px 0;
+  }
+  .potion-mix { margin: 8px 0; min-height: 40px; }
+
+  .potion-ing {
+    font-size: 2.2em;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 12px;
+    transition: all 0.2s;
+    background: rgba(108,92,231,0.1);
+  }
+  .potion-ing:hover { transform: scale(1.2); background: rgba(108,92,231,0.2); }
+
+  /* Treasure */
+  .treasure-bg { background: linear-gradient(180deg, #fdcb6e, #e17055); }
+  .treasure-chest { font-size: 80px; text-align: center; margin: 15px 0; cursor: pointer; transition: transform 0.3s; }
+  .treasure-chest:hover { transform: scale(1.1) rotate(5deg); }
+  .treasure-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-width: 400px; margin: 12px auto; }
+  .treasure-card {
+    background: rgba(255,255,255,0.2); border-radius: 14px; padding: 12px; text-align: center;
+    font-size: 2.2em; cursor: pointer; transition: all 0.3s;
+    border: 3px solid rgba(255,255,255,0.2); min-height: 70px;
+  }
+  .treasure-card:hover { background: rgba(255,255,255,0.3); transform: scale(1.05); }
+  .treasure-card.revealed { background: rgba(255,255,255,0.9); border-color: #ffd700; }
+
+  /* Paint / Art */
+  .paint-bg { background: linear-gradient(180deg, #fd79a8, #e84393); }
+  .paint-canvas { background: rgba(255,255,255,0.95); border-radius: 20px; padding: 20px; text-align: center; }
+  .paint-canvas h3 { font-family: 'Fredoka One', cursive; color: #e84393; margin-bottom: 8px; }
+  .paint-colors { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin: 10px 0; }
+  .paint-color {
+    width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+    border: 3px solid transparent; transition: all 0.2s;
+  }
+  .paint-color:hover { transform: scale(1.15); }
+  .paint-color.selected { border-color: #fff; transform: scale(1.15); box-shadow: 0 0 10px rgba(0,0,0,0.3); }
+  .paint-emoji-btns { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin: 10px 0; }
+
+  .art-display {
+    background: #fff;
+    border-radius: 15px;
+    min-height: 200px;
+    margin: 15px auto;
+    position: relative;
+    border: 3px solid #eee;
+    cursor: crosshair;
+  }
+  .art-item { position: absolute; cursor: default; font-size: 2em; transition: none; }
+
+  /* Sound grid */
+  .sound-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 500px; margin: 12px auto; }
+
+  /* Garden */
+  .garden-bg { background: linear-gradient(180deg, #55efc4, #00b894); }
+  .garden-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-width: 350px; margin: 12px auto; }
+  .garden-plot {
+    background: rgba(139, 90, 43, 0.35); border-radius: 14px; padding: 12px;
+    text-align: center; font-size: 2em; cursor: pointer; transition: all 0.2s;
+    border: 3px solid rgba(255,255,255,0.15); min-height: 75px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .garden-plot:hover { background: rgba(139, 90, 43, 0.5); transform: scale(1.05); }
+
+  .plant-tools { display: flex; gap: 8px; justify-content: center; margin: 12px 0; flex-wrap: wrap; }
+  .plant-tool {
+    background: rgba(255,255,255,0.9); border-radius: 14px; padding: 10px 16px; text-align: center;
+    cursor: pointer; transition: all 0.2s; border: 3px solid #00704A;
+  }
+  .plant-tool:hover { transform: scale(1.05); }
+  .plant-tool.selected { background: #4ecdc4; border-color: #fff; }
+  .plant-tool .tool-emoji { font-size: 1.8em; display: block; }
+
+  /* New Room Panels */
+  .party-bg { background: linear-gradient(180deg, #fd79a8, #e84393); }
+  .pet-bg { background: linear-gradient(180deg, #fdcb6e, #f39c12); }
+  .library-bg { background: linear-gradient(180deg, #74b9ff, #0984e3); }
+  .play-bg { background: linear-gradient(180deg, #a29bfe, #6c5ce7); }
+  .dance-bg { background: linear-gradient(180deg, #e17055, #d63031); }
+  .photo-bg { background: linear-gradient(180deg, #636e72, #2d3436); }
+  .game-bg { background: linear-gradient(180deg, #00b894, #00cec9); }
+  .bath-bg { background: linear-gradient(180deg, #dfe6e9, #b2bec3); }
+
+  /* ===== FUN & EFFECTS ===== */
+  .particle { position: fixed; font-size: 2em; pointer-events: none; animation: floatUp 2s ease-out forwards; z-index: 200; }
+  @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-200px) scale(1.5); } }
+
+  .music-note { position: fixed; font-size: 1.5em; pointer-events: none; z-index: 150; animation: noteFloat 3s ease-in-out forwards; }
+  @keyframes noteFloat {
+    0% { opacity: 1; transform: translateY(0) rotate(0deg); }
+    50% { opacity: 0.8; transform: translateY(-80px) rotate(15deg); }
+    100% { opacity: 0; transform: translateY(-160px) rotate(-10deg); }
+  }
+
+  .score-popup { position: fixed; pointer-events: none; z-index: 300; font-family: 'Fredoka One', cursive; font-size: 1.8em; color: #ffd700; text-shadow: 2px 2px 0 #00704A, -1px -1px 0 #000; animation: scoreFloat 1.5s ease-out forwards; }
+  @keyframes scoreFloat { 0% { opacity: 1; transform: translateY(0) scale(0.5); } 30% { transform: translateY(-20px) scale(1.3); } 100% { opacity: 0; transform: translateY(-80px) scale(1); } }
+
+  .achievement-popup { position: fixed; top: 60px; left: 50%; transform: translateX(-50%) scale(0); z-index: 400; background: linear-gradient(135deg, #ffd700, #ff9500); color: #333; font-family: 'Fredoka One', cursive; padding: 12px 28px; border-radius: 18px; font-size: 1.1em; box-shadow: 0 5px 25px rgba(255,215,0,0.5); animation: achievePop 3s ease-out forwards; white-space: nowrap; border: 2px solid #fff; }
+  @keyframes achievePop { 0% { transform: translateX(-50%) scale(0) rotate(-10deg); opacity:0; } 15% { transform: translateX(-50%) scale(1.1) rotate(2deg); opacity:1; } 25% { transform: translateX(-50%) scale(1) rotate(0deg); opacity:1; } 80% { transform: translateX(-50%) scale(1) rotate(0deg); opacity:1; } 100% { transform: translateX(-50%) scale(0.8) translateY(-30px); opacity:0; } }
+
+  .confetti-piece { position: fixed; width: 10px; height: 10px; pointer-events: none; z-index: 250; border-radius: 2px; animation: confettiFall 2s ease-out forwards; }
+  @keyframes confettiFall { 0% { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); } 100% { opacity: 0; transform: translateY(400px) rotate(720deg) scale(0.3); } }
+
+  .trail-sparkle { position: absolute; pointer-events: none; z-index: 4; font-size: 1em; animation: sparkleFade 0.5s ease-out forwards; }
+  @keyframes sparkleFade { 0% { opacity: 0.8; transform: scale(1); } 100% { opacity: 0; transform: scale(0.3); } }
+
+  .shake { animation: shake 0.4s ease-in-out; }
+  @keyframes shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-5px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(3px); } }
+
+  @keyframes spinEmoji { 0% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(360deg) scale(1.5); } 100% { transform: rotate(720deg) scale(1); } }
+
+  .player-char.dancing { animation: charDance 0.3s ease-in-out infinite alternate; }
+  @keyframes charDance { 0% { transform: rotate(-10deg) translateY(-5px); } 100% { transform: rotate(10deg) translateY(-5px); } }
+
+  .level-up-banner { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); z-index: 500; background: linear-gradient(135deg, #ffd700, #ff6b6b); color: #fff; font-family: 'Fredoka One', cursive; font-size: 2.5em; padding: 20px 50px; border-radius: 25px; box-shadow: 0 10px 40px rgba(255,215,0,0.6); animation: levelUpAnim 3s ease-out forwards; border: 3px solid #fff; }
+  @keyframes levelUpAnim { 0% { transform: translate(-50%, -50%) scale(0) rotate(-15deg); opacity:0; } 20% { transform: translate(-50%, -50%) scale(1.2) rotate(3deg); opacity:1; } 30% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity:1; } 80% { opacity:1; } 100% { transform: translate(-50%, -50%) scale(0.5) translateY(-50px); opacity:0; } }
+
+  .message-popup { position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.85); color: #fff; font-family: 'Fredoka One', cursive; font-size: 1em; padding: 10px 22px; border-radius: 14px; z-index: 300; animation: msgPop 0.25s ease-out; border: 2px solid rgba(255,215,0,0.5); backdrop-filter: blur(8px); }
+  @keyframes msgPop { 0% { transform: translateX(-50%) scale(0); } 80% { transform: translateX(-50%) scale(1.05); } 100% { transform: translateX(-50%) scale(1); } }
+
+  .combo-display { position: fixed; top: 50%; right: 15px; transform: translateY(-50%); z-index: 200; font-family: 'Fredoka One', cursive; font-size: 1.5em; color: #ff6b6b; text-shadow: 2px 2px 0 #000; pointer-events: none; opacity: 0; transition: opacity 0.3s; }
+  .combo-display.active { opacity: 1; }
+
+  /* ===== DISNEY MUSIC ===== */
+  .sounds-bg { background: linear-gradient(180deg, #a29bfe, #6c5ce7); }
+  .sounds-bg.disco-active { animation: discoBg 0.5s infinite alternate; }
+  @keyframes discoBg {
+    0% { background: linear-gradient(180deg, #e84393, #6c5ce7); }
+    25% { background: linear-gradient(180deg, #fdcb6e, #e17055); }
+    50% { background: linear-gradient(180deg, #00cec9, #0984e3); }
+    75% { background: linear-gradient(180deg, #fd79a8, #a29bfe); }
+    100% { background: linear-gradient(180deg, #55efc4, #6c5ce7); }
+  }
+
+  .visualizer { display:flex; gap:4px; justify-content:center; align-items:flex-end; height:45px; margin:6px auto; width:180px; }
+  .visualizer .bar { flex:1; background: linear-gradient(to top, #e84393, #fdcb6e); border-radius:4px 4px 0 0; height:15%; transition: height 0.15s; }
+  .visualizer.active .bar { animation: barDance 0.4s infinite alternate; }
+  .visualizer.active .bar:nth-child(2n) { animation-delay: 0.1s; }
+  .visualizer.active .bar:nth-child(3n) { animation-delay: 0.2s; }
+  .visualizer.active .bar:nth-child(4n) { animation-delay: 0.05s; }
+  @keyframes barDance { 0% { height: 10%; } 100% { height: 90%; } }
+
+  .now-playing-box { font-family:'Fredoka One',cursive;color:#ffd700;font-size:1.1em;margin:6px 0;min-height:1.5em;padding:6px 14px;background:rgba(0,0,0,0.25);border-radius:12px;display:inline-block; }
+  .now-playing-box.singing { animation: pulse 0.8s infinite alternate; }
+
+  .karaoke-box { background:rgba(0,0,0,0.25); border-radius:16px; padding:10px 18px; max-width:480px; margin:6px auto; min-height:40px; }
+  .karaoke-lyrics { font-family:'Fredoka One',cursive;color:#fff;font-size:1.2em;line-height:1.4; }
+  .karaoke-lyrics .highlight { color:#ffd700; font-size:1.1em; display:inline-block; animation: lyricPop 0.4s; }
+  @keyframes lyricPop { 0% { transform: scale(0.5); opacity:0; } 100% { transform: scale(1); opacity:1; } }
+
+  .dance-stage { display:flex; justify-content:center; gap:15px; margin:8px auto; font-size:2.5em; min-height:60px; align-items:flex-end; }
+  .dancer { transition: all 0.2s; display:inline-block; cursor:pointer; user-select:none; }
+  .dancer.dancing { animation: dancerBounce 0.4s infinite alternate; }
+  .dancer.dancing:nth-child(2n) { animation-delay: 0.2s; }
+  .dancer.dancing:nth-child(3n) { animation-delay: 0.1s; }
+  @keyframes dancerBounce { 0% { transform: translateY(0) rotate(-5deg); } 100% { transform: translateY(-15px) rotate(5deg); } }
+
+  .dance-lights { display: inline-block; transition: all 0.2s; font-size: 1.5em; }
+
+  .photo-frame { font-size:4em;margin:12px 0; border:4px solid #ffd700; border-radius:14px; padding:18px; background:rgba(255,255,255,0.1); display:inline-block; transition: all 0.3s; min-width:130px; min-height:80px; }
+  .photo-frame.flash { animation: photoFlash 0.5s ease-out; }
+  @keyframes photoFlash { 0% { background: rgba(255,255,255,0); } 50% { background: rgba(255,255,255,0.9); } 100% { background: rgba(255,255,255,0); } }
+  .photo-frame:hover { transform: scale(1.05); border-color: #ff6b6b; }
+
+  .photo-gallery-item { border: 3px solid #ffd700; border-radius: 8px; padding: 6px; font-size: 1.8em; background: rgba(0,0,0,0.2); cursor: pointer; transition: all 0.2s; display: inline-block; }
+  .photo-gallery-item:hover { transform: scale(1.15) rotate(5deg); }
+
+  .empty-msg { color: rgba(255,255,255,0.7); text-align: center; font-family: 'Fredoka One', cursive; font-size: 1em; margin-top: 15px; }
+
+  /* Scrollbar styling */
+  .room-content::-webkit-scrollbar { width: 6px; }
+  .room-content::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); border-radius: 3px; }
+  .room-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 3px; }
+  .room-content::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.5); }
+</style>
+</head>
+<body>
+
+<!-- START SCREEN -->
+<div id="start-screen">
+  <div class="game-title-card">
+    <div class="siren-logo">☕</div>
+  </div>
+  <h1>Starbucks Adventure Cafe</h1>
+  <p class="subtitle">Explore, Cook & Play!</p>
+
+  <div class="choose-text">Choose Your Character</div>
+  <div class="char-grid" id="char-grid"></div>
+
+  <button class="btn btn-green" id="play-btn" onclick="startGame()">START ADVENTURE</button>
+
+  <div class="controls-info">
+    <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or <kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd> Move &nbsp;&nbsp;
+    <kbd>E</kbd> / <kbd>Space</kbd> Enter Room &nbsp;&nbsp;
+    <kbd>F</kbd> Dance
+  </div>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="game-screen">
+  <div class="top-bar">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="char-info" id="top-char"></span>
+      <div class="score-display">Score: <span id="score">0</span></div>
+    </div>
+    <div class="money-display">Coins: <span id="coins">0</span></div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="level-display">Lv.<span id="level">1</span></div>
+      <button class="music-btn active" id="music-btn" onclick="toggleMusic()">Music</button>
+    </div>
+  </div>
+
+  <div class="store-container" id="store-container">
+    <div class="store-floor" id="store-floor"></div>
+    <canvas class="player-char" id="player" width="64" height="64"></canvas>
+  </div>
+
+  <div class="interact-hint" id="interact-hint"></div>
+  <div class="combo-display" id="combo-display"></div>
+</div>
+
+<!-- ===== ROOM SCREENS ===== -->
+
+<!-- KITCHEN -->
+<div class="room-screen" id="screen-kitchen">
+  <div class="room-panel kitchen-bg">
+    <div class="room-header">
+      <button class="back-btn" onclick="goToMap()">Exit to Cafe</button>
+      <span class="room-header-title">Kitchen</span>
+    </div>
+    <div class="room-content">
+      <div class="kitchen-work">
+        <div class="ingredients-panel">
+          <h3>Ingredients</h3>
+          <div class="ingredients-grid" id="kitchen-grid"></div>
+        </div>
+        <div class="prep-panel">
+          <h3>Your Station</h3>
+          <div class="current-cup" id="prep-cup">☕</div>
+          <div class="prep-items" id="prep-items"></div>
+          <div id="prep-recipe-name" style="font-family:'Fredoka One',cursive;color:#00704A;margin:8px 0;"></div>
+          <div class="action-btns">
+            <button class="action-btn btn-finish" onclick="finishItem()">Finish It!</button>
+            <button class="action-btn btn-trash" onclick="trashPrep()">Start Over</button>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:12px;">
+        <h3 style="font-family:'Fredoka One',cursive;color:#fff;text-align:center;margin-bottom:6px;">Orders to Make</h3>
+        <div id="kitchen-orders"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- COUNTER -->
+<div class="room-screen" id="screen-counter">
+  <div class="room-panel counter-bg">
+    <div class="room-header">
+      <button class="back-btn" onclick="goToMap()">Exit to Cafe</button>
+      <span class="room-header-title">Order Counter</span>
+    </div>
+    <div class="room-content">
+      <div id="queue-list"></div>
+      <div class="empty-msg" id="queue-empty">No customers in line! Add some by visiting the Seating area.</div>
+    </div>
+  </div>
+</div>
+
+<!-- SEATING -->
+<div class="room-screen" id="screen-seating">
+  <div class="room-panel seating-bg">
+    <div class="room-header">
+      <button class="back-btn" onclick="goToMap()">Exit to Cafe</button>
+      <span class="room-header-title">Seating Area</span>
+    </div>
+    <div class="room-content" id="seating-content"></div>
+  </div>
+</div>
+
+<!-- MAGIC POTION -->
+<div class="room-screen" id="screen-magic">
+  <div class="room-panel magic-bg">
+    <div class="room-header">
+      <button class="back-btn" onclick="goToMap()">Exit to Cafe</button>
+      <span class="room-header-title">Magic Potion Room</span>
+    </div>
+    <div class="room-content">
+      <div class="magic-potion">
+        <h3>Mix a Magic Potion!</h3>
+        <p style="color:#888;font-size:0.9em;">Click 2-3 ingredients, then cast a spell!</p>
+        <div class="potion-cauldron" id="cauldron" onclick="castSpell()">🧪</div>
+        <div class="potion-result" id="potion-result"></div>
+        <div class="potion-mix" id="potion-mix"></div>
+        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:10px 0;">
+          <div class="potion-ing" onclick="addPotionIng('🌈')">🌈</div>
+          <div class="potion-ing" onclick="addPotionIng('⭐')">⭐</div>
+          <div class="potion-ing" onclick="addPotionIng('🍀')">🍀</div>
+          <div class="potion-ing" onclick="addPotionIng('🔮')">🔮</div>
+          <div class="potion-ing" onclick="addPotionIng('🧁')">🧁</div>
+          <div class="potion-ing" onclick="addPotionIng('🍄')">🍄</div>
+          <div class="potion-ing" onclick="addPotionIng('🌸')">🌸</div>
+          <div class="potion-ing" onclick="addPotionIng('🫧')">🫧</div>
+        </div>
+        <button class="magic-btn" onclick="castSpell()">Cast Spell!</button>
+        <button class="magic-btn" onclick="clearPotion()" style="background:#6c5ce7;">Clear</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TREASURE -->
+<div class="room-screen" id="screen-treasure">
+  <div class="room-panel treasure-bg">
+    <div class="room-header">
+      <button class="back-btn" onclick="goToMap()">Exit to Cafe</button>
+      <span class="room-header-title">Treasure Hunt</span>
+    </div>
+    <div class="room-content" style="text-align:center;">
+      <p style="font-family:'Fredoka One',cursive;color:#fff;font-size:1.1em;">Find the matching pairs!</p>
+      <div class="treasure-chest" onclick="resetTreasure()">🏴‍☠️</div>
+      <div class="treasure-grid" id="treasure-grid"></div>
+      <p id="treasure-msg" style="font-family:'Fredoka One',cursive;color:#fff;margin-top:12px;"></p>
+    </div>
+  </div>
+</div>
+
+<!-- ART STUDIO -->
+<div class="room-screen" id="screen-paint">
+  <div class="room-panel paint-bg">
+    <div class="room-header">
+      <button class="back-btn" onclick="goToMap()">Exit to Cafe</button>
+      <span class="room-header-title">Art Studio</span>
+    </div>
+    <div class="room-content">
+      <div class="paint-canvas">
+        <h3>Draw & Decorate!</h3>
+        <p style="color:#888;font-size:0.85em;">Pick a color or emoji, then click on the canvas!</p>
+        <div class="paint-colors" id="paint-colors"></div>
+        <div class="paint-emoji-btns">
+          <span class="paint-emoji" onclick="setPaintEmoji('☕')">☕</span>
+          <span class="paint-emoji" onclick="setPaintEmoji('⭐')">⭐</span>
+          <span class="paint-emoji" onclick="setPaintEmoji('❤️')">❤️</span>
+          <span class="paint-emoji" onclick="setPaintEmoji('🎵')">🎵</span>
+          <span class="paint-emoji" onclick="setPaintEmoji('🌈')">🌈</span>
+          <span class="paint-emoji" onclick="setPaintEmoji('🦋')">🦋</span>
+          <span class="paint-emoji" onclick="setPaintEmoji('🌸')">🌸</span>
+          <span class="paint-emoji" onclick="setPaintEmoji('🍰')">🍰</span>
+          <span class="paint-emoji" onclick="setPaintEmoji('🧁')">🧁</span>
+          <span class="paint-emoji" onclick="setPaintEmoji('🎉')">🎉</span>
+        </div>
+        <div class="art-display" id="art-display"></div>
+        <button class="magic-btn" onclick="clearArt()" style="background:#e84393;font-size:0.85em;padding:10px 18px;">Clear Canvas</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DISNEY MUSIC ROOM -->
+<div class="room-screen" id="screen-sounds">
+  <div class="room-panel sounds-bg">
+    <div class="room-header">
+      <button class="back-btn" onclick="goToMap()">Exit to Cafe</button>
+      <span class="room-header-title">Disney Music</span>
+    </div>
+    <div class="room-content" style="text-align:center;overflow-y:auto;max-height:70vh;">
+      <p style="font-family:'Fredoka One',cursive;color:#fff;font-size:1.4em;margin-bottom:5px;">Choose a Disney Song!</p>
+      <div class="visualizer" id="visualizer">
+        <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+      </div>
+      <div id="now-playing" class="now-playing-box"></div>
+      <div class="karaoke-box" id="karaoke-box">
+        <div class="karaoke-lyrics" id="karaoke-lyrics">Pick a song to sing along!</div>
+      </div>
+      <div class="dance-stage" id="music-dancer-stage">
+        <div class="dancer" id="dancer1">💃</div>
+        <div class="dancer" id="dancer2">🕺</div>
+        <div class="dancer" id="dancer3">🦸</div>
+        <div class="dancer" id="dancer4">👸</div>
+      </div>
+      <div class="sound-grid" id="sound-grid"></div>
+      <div style="margin-top:10px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+        <button class="magic-btn" onclick="toggleDisco()" id="disco-btn" style="background:#e84393;">Disco Mode</button>
+        <button class="magic-btn" onclick="addDancer()" style="background:#a29bfe;">Add Dancer</button>
+        <button class="magic-btn" onclick="confettiBurst()" style="background:#fdcb6e;color:#333;">Confetti!</button>
+        <button class="magic-btn" onclick="stopDisneySong()" style="background:#e74c3c;">Stop</button>
+        <button class="magic-btn" onclick="startMusic()" style="background:#2ecc71;">Cafe Music</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GARDEN -->
+<div class="room-screen" id="screen-garden">
+  <div class="room-panel garden-bg">
+    <div class="room-header">
+      <button class="back-btn" onclick="goToMap()">Exit to Cafe</button>
+      <span class="room-header-title">Garden</span>
+    </div>
+    <div class="room-content" style="text-align:center;">
+      <p style="font-family:'Fredoka One',cursive;color:#fff;font-size:1.1em;">Choose a tool, then click a dirt plot!</p>
+      <div class="plant-tools">
+        <div class="plant-tool selected" onclick="selectTool('seed')" id="tool-seed"><span class="tool-emoji">🌱</span><span class="tool-name">Seed</span></div>
+        <div class="plant-tool" onclick="selectTool('water')" id="tool-water"><span class="tool-emoji">💧</span><span class="tool-name">Water</span></div>
+        <div class="plant-tool" onclick="selectTool('sun')" id="tool-sun"><span class="tool-emoji">☀️</span><span class="tool-name">Sun</span></div>
+        <div class="plant-tool" onclick="selectTool('flower')" id="tool-flower"><span class="tool-emoji">🌺</span><span class="tool-name">Flower</span></div>
+      </div>
+      <div class="garden-grid" id="garden-grid"></div>
+      <p id="garden-msg" style="font-family:'Fredoka One',cursive;color:#fff;margin-top:10px;"></p>
+    </div>
+  </div>
+</div>
+
+<!-- PARTY ROOM -->
+<div class="room-screen" id="screen-party">
+  <div class="room-panel party-bg">
+    <div class="room-header">
+      <button class="back-btn" onclick="goToMap()">Exit to Cafe</button>
+      <span class="room-header-title">Party Room</span>
+    </div>
+    <div class="room-content" style="text-align:center;">
+      <p style="font-family:'Fredoka One',cursive;color:#fff;font-size:1.3em;">Party Time!</p>
+      <div class="sound-grid" id="party-grid" style="max-width:500px;"></div>
+      <div style="margin-top:12px;">
+        <button class="magic-btn" onclick="partyConfetti()" style="background:#ff6b6b;">Confetti!</button>
+        <button class="magic-btn" onclick="partyDance()" style="background:#a29bfe;">Dance!</button>
+      </div>
+      <div id="party-message" style="font-family:'Fredoka One',cursive;color:#ffd700;font-size:1.2em;margin-top:12px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PET CORNER -->
+<div class="room-screen" id="screen-pet">
+  <div class="room-panel pet-bg">
+    <div class="room-header">
+      <button class="back-btn" onclick="goToMap()">Exit to Cafe</button>
+      <span class="room-header-title">Pet Corner</span>
+    </div>
+    <div class="room-content" style="text-align:center;">
+      <p style="font-family:'Fredoka One',cursive;color:#fff;font-size:1.1em;">Pet & Play with Animals!</p>
+      <div class="sound-grid" id="pet-grid" style="max-width:400px;"></div>
+      <p id="pet-msg" style="font-family:'Fredoka One',cursive;color:#fff;margin-top:12px;"></p>
+    </div>
+  </div>
+</div>
+
+<!-- BOOK NOOK -->
+<div class="room-screen" id="screen-library">
+  <div class="room-panel library-bg">
+    <div class="room-header">
+      <button class="back-btn" onclick="goToMap()">Exit to Cafe</button>
+      <span class="room-header-title">Book Nook</span>
+    </div>
+    <div class="room-content" style="text-align:center;">
+      <p style="font-family:'Fredoka One',cursive;color:#fff;font-size:1.2em;">Pick a Story!</p>
+      <div id="book-list" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:12px 0;"></div>
+      <div class="magic-potion" style="background:#fff;border-radius:16px;padding:14px;max-width:500px;margin:8px auto;">
+        <h3 id="book-title" style="font-family:'Fredoka One',cursive;color:#0984e3;">Pick a book to read!</h3>
+        <p id="book-text" style="color:#333;font-size:0.95em;line-height:1.5;margin-top:8px;"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PLAY AREA -->
+<div class="room-screen" id="screen-play">
+  <div class="room-panel play-bg">
+    <div class="room-header">
+      <button class="back-btn" onclick="goToMap()">Exit to Cafe</button>
+      <span class="room-header-title">Play Area</span>
+    </div>
+    <div class="room-content" style="text-align:center;">
+      <p style="font-family:'Fredoka One',cursive;color:#fff;font-size:1.2em;">Fun Games!</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:10px 0;">
+        <button class="magic-btn" onclick="playDice()">Roll Dice</button>
+        <button class="magic-btn" onclick="playRockPaper()">R P S</button>
+        <button class="magic-btn" onclick="playSimon()">Simon Says</button>
+        <button class="magic-btn" onclick="playJoke()">Tell a Joke</button>
+        <button class="magic-btn" onclick="playSlap()" style="background:#ff6348;">Slap Battle</button>
+        <button class="magic-btn" onclick="playSpin()" style="background:#ff9ff3;">Spin!</button>
+      </div>
+      <div class="magic-potion" style="background:#fff;border-radius:16px;padding:14px;max-width:500px;margin:8px auto;">
+        <h3 id="play-title" style="font-family:'Fredoka One',cursive;color:#6c5ce7;">Choose a game!</h3>
+        <p id="play-text" style="color:#333;font-size:1em;margin-top:8px;"></p>
+      </div>
+      <div id="play-emoji-stage" style="font-size:2.5em;margin:10px auto;min-height:50px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DANCE ROOM -->
+<div class="room-screen" id="screen-dance">
+  <div class="room-panel dance-bg">
+    <div class="room-header">
+      <button class="back-btn" onclick="goToMap()">Exit to Cafe</button>
+      <span class="room-header-title">Dance Floor!</span>
+    </div>
+    <div class="room-content" style="text-align:center;">
+      <p style="font-family:'Fredoka One',cursive;color:#fff;font-size:1.2em;">Dance Dance!</p>
+      <div style="font-size:3.5em;margin:12px 0;" id="dance-floor">
+        <div style="display:flex;gap:8px;justify-content:center;">
+          <span class="dance-lights" id="dl1">🔴</span>
+          <span class="dance-lights" id="dl2">🟢</span>
+          <span class="dance-lights" id="dl3">🔵</span>
+          <span class="dance-lights" id="dl4">🟡</span>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:8px;">
+          <span class="dance-lights" id="dl5">🟣</span>
+          <span class="dance-lights" id="dl6">🟠</span>
+          <span class="dance-lights" id="dl7">⚪</span>
+          <span class="dance-lights" id="dl8">🔴</span>
+        </div>
+      </div>
+      <div id="dance-stage-area" style="font-size:3.5em;margin:12px auto;display:flex;gap:12px;justify-content:center;">
+        <span class="dancer" onclick="clickDancer(this)">💃</span>
+        <span class="dancer" onclick="clickDancer(this)">🕺</span>
+        <span class="dancer" onclick="clickDancer(this)">🦸</span>
+        <span class="dancer" onclick="clickDancer(this)">👸</span>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+        <button class="magic-btn" onclick="startDance()">Disco Ball!</button>
+        <button class="magic-btn" onclick="stopDance()">Stop</button>
+        <button class="magic-btn" onclick="addDancer()" style="background:#a29bfe;">Add Dancer</button>
+        <button class="magic-btn" onclick="spawnConfetti(15);playSound('perfect');score+=3;updateUI();" style="background:#fdcb6e;color:#333;">Confetti!</button>
+      </div>
+      <p id="dance-msg" style="font-family:'Fredoka One',cursive;color:#ffd700;font-size:1.1em;margin-top:12px;"></p>
+    </div>
+  </div>
+</div>
+
+<!-- PHOTO BOOTH -->
+<div class="room-screen" id="screen-photo">
+  <div class="room-panel photo-bg">
+    <div class="room-header">
+      <button class="back-btn" onclick="goToMap()">Exit to Cafe</button>
+      <span class="room-header-title">Photo Booth</span>
+    </div>
+    <div class="room-content" style="text-align:center;">
+      <p style="font-family:'Fredoka One',cursive;color:#fff;font-size:1.2em;">Say Cheese!</p>
+      <div class="photo-frame" id="photo-display">🤳</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:8px 0;">
+        <span class="paint-emoji" onclick="setPhotoProp('🎩')">🎩</span>
+        <span class="paint-emoji" onclick="setPhotoProp('👑')">👑</span>
+        <span class="paint-emoji" onclick="setPhotoProp('🥳')">🥳</span>
+        <span class="paint-emoji" onclick="setPhotoProp('😎')">😎</span>
+        <span class="paint-emoji" onclick="setPhotoProp('🧐')">🧐</span>
+        <span class="paint-emoji" onclick="setPhotoProp('🤩')">🤩</span>
+        <span class="paint-emoji" onclick="setPhotoProp('🤡')">🤡</span>
+        <span class="paint-emoji" onclick="setPhotoProp('👻')">👻</span>
+        <span class="paint-emoji" onclick="setPhotoProp('🎀')">🎀</span>
+        <span class="paint-emoji" onclick="setPhotoProp('🌈')">🌈</span>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:6px 0;">
+        <span class="paint-emoji" onclick="setPhotoProp('🐱')">🐱</span>
+        <span class="paint-emoji" onclick="setPhotoProp('🐶')">🐶</span>
+        <span class="paint-emoji" onclick="setPhotoProp('🦊')">🦊</span>
+        <span class="paint-emoji" onclick="setPhotoProp('🐸')">🐸</span>
+        <span class="paint-emoji" onclick="setPhotoProp('🦄')">🦄</span>
+        <span class="paint-emoji" onclick="setPhotoProp('🌟')">🌟</span>
+      </div>
+      <div style="display:flex;gap:6px;justify-content:center;">
+        <button class="magic-btn" onclick="takePhoto()">Take Photo!</button>
+        <button class="magic-btn" onclick="randomPhoto()" style="background:#a29bfe;">Random!</button>
+      </div>
+      <div id="photo-gallery" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:12px;"></div>
+      <p id="photo-count" style="font-family:'Fredoka One',cursive;color:#ffd700;font-size:0.85em;margin-top:6px;"></p>
+    </div>
+  </div>
+</div>
+
+<!-- GAME ROOM -->
+<div class="room-screen" id="screen-game">
+  <div class="room-panel game-bg">
+    <div class="room-header">
+      <button class="back-btn" onclick="goToMap()">Exit to Cafe</button>
+      <span class="room-header-title">Game Room</span>
+    </div>
+    <div class="room-content" style="text-align:center;">
+      <p style="font-family:'Fredoka One',cursive;color:#fff;font-size:1.2em;">Board Games!</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:10px 0;">
+        <button class="magic-btn" onclick="playSnake()">Guess the Snake</button>
+        <button class="magic-btn" onclick="playSlot()">Slot Machine</button>
+        <button class="magic-btn" onclick="playMemory()">Memory Game</button>
+      </div>
+      <div class="magic-potion" style="background:#fff;border-radius:16px;padding:14px;max-width:500px;margin:8px auto;">
+        <h3 id="game-title" style="font-family:'Fredoka One',cursive;color:#00704A;">Pick a game!</h3>
+        <p id="game-text" style="color:#333;font-size:1em;margin-top:8px;"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RESTROOM -->
+<div class="room-screen" id="screen-bath">
+  <div class="room-panel bath-bg">
+    <div class="room-header">
+      <button class="back-btn" onclick="goToMap()">Exit to Cafe</button>
+      <span class="room-header-title">Restroom</span>
+    </div>
+    <div class="room-content" style="text-align:center;">
+      <div style="font-size:3.5em;margin:15px 0;">🚻🚿🪥</div>
+      <p style="font-family:'Fredoka One',cursive;color:#333;font-size:1.1em;">Wash your hands & clean up!</p>
+      <div style="margin:12px auto;">
+        <button class="magic-btn" onclick="washHands()" style="background:#0984e3;">Wash Hands!</button>
+        <button class="magic-btn" onclick="sprinkle()" style="background:#6c5ce7;">Freshen Up!</button>
+      </div>
+      <p id="bath-msg" style="font-family:'Fredoka One',cursive;color:#00704A;font-size:1em;margin-top:12px;"></p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============== CHARACTERS ==============
+const characters = [
+  { name: 'Lily',   skinColor: '#FFD5B4', hairColor: '#FFD700', shirtColor: '#FF6B9D', pantsColor: '#5B7DB1', shoeColor: '#8B4513', hairStyle: 'long' },
+  { name: 'Max',    skinColor: '#FFD5B4', hairColor: '#654321', shirtColor: '#4A90D9', pantsColor: '#3C3C3C', shoeColor: '#2C2C2C', hairStyle: 'short' },
+  { name: 'Sam',    skinColor: '#8D5524', hairColor: '#2C1810', shirtColor: '#4CAF50', pantsColor: '#5C5C5C', shoeColor: '#3C3C3C', hairStyle: 'short' },
+  { name: 'Mia',    skinColor: '#FFD5B4', hairColor: '#FFC800', shirtColor: '#9C27B0', pantsColor: '#4A69A0', shoeColor: '#6B3A2A', hairStyle: 'long' },
+  { name: 'Chef Leo',skinColor: '#FFD5B4', hairColor: '#333', shirtColor: '#FFF', pantsColor: '#3C3C3C', shoeColor: '#2C2C2C', hairStyle: 'chef' },
+  { name: 'Art',    skinColor: '#FFD5B4', hairColor: '#543321', shirtColor: '#E74C3C', pantsColor: '#2C3E50', shoeColor: '#2C2C2C', hairStyle: 'side' },
+  { name: 'Zoe',    skinColor: '#FFD5B4', hairColor: '#1A1A2E', shirtColor: '#00BCD4', pantsColor: '#5C5C5C', shoeColor: '#3C3C3C', hairStyle: 'short' },
+  { name: 'Super Jay',skinColor: '#FFD5B4', hairColor: '#654321', shirtColor: '#E53935', pantsColor: '#1565C0', shoeColor: '#2C2C2C', hairStyle: 'short', cape: true },
+];
+
+// ============== RECIPES ==============
+const recipes = {
+  espresso:         { name: 'Espresso',    emoji: '☕', ingredients: ['coffee'] },
+  latte:            { name: 'Latte',       emoji: '☕', ingredients: ['coffee', 'milk'] },
+  caramel_macchiato:{ name: 'Caramel Macchiato', emoji: '☕', ingredients: ['coffee', 'milk', 'caramel'] },
+  mocha:            { name: 'Mocha',       emoji: '☕', ingredients: ['coffee', 'milk', 'chocolate'] },
+  frappuccino:      { name: 'Frappuccino', emoji: '🥤', ingredients: ['coffee', 'milk', 'ice', 'cream'] },
+  hot_chocolate:    { name: 'Hot Chocolate', emoji: '🍫', ingredients: ['chocolate', 'milk', 'cream'] },
+  chai_latte:       { name: 'Chai Latte',  emoji: '🍵', ingredients: ['tea', 'milk', 'caramel'] },
+  green_tea:        { name: 'Green Tea',   emoji: '🍵', ingredients: ['tea', 'water'] },
+  smoothie:         { name: 'Smoothie',    emoji: '🥤', ingredients: ['strawberry', 'milk', 'ice'] },
+  fruity_tea:       { name: 'Fruity Tea',  emoji: '🍵', ingredients: ['lemon', 'tea', 'water'] },
+  cookie:           { name: 'Cookie',      emoji: '🍪', ingredients: ['dough', 'chocolate'] },
+  muffin:           { name: 'Muffin',      emoji: '🧁', ingredients: ['dough', 'cream'] },
+};
+
+// ============== STATE ==============
+let score = 0, coins = 0, level = 1, musicPlaying = false;
+let selectedChar = 0;
+let audioCtx = null, musicLoopId = null;
+
+// ============== SPRITE ENGINE ==============
+const SPRITE_W = 16, SPRITE_H = 20;
+const SCALE = 4;
+
+function createSpriteBuf() {
+  const buf = [];
+  for (let y = 0; y < SPRITE_H; y++) buf[y] = new Array(SPRITE_W).fill(null);
+  return buf;
+}
+
+function drawPixel(buf, x, y, color) {
+  if (x >= 0 && x < SPRITE_W && y >= 0 && y < SPRITE_H) buf[y][x] = color;
+}
+
+function drawRect(buf, x, y, w, h, color) {
+  for (let dy = 0; dy < h; dy++)
+    for (let dx = 0; dx < w; dx++)
+      drawPixel(buf, x + dx, y + dy, color);
+}
+
+function drawCircle(buf, cx, cy, r, color) {
+  for (let y = -r; y <= r; y++)
+    for (let x = -r; x <= r; x++)
+      if (x * x + y * y <= r * r)
+        drawPixel(buf, cx + x, cy + y, color);
+}
+
+function buildCharSprite(charIdx, dir, frame) {
+  const buf = createSpriteBuf();
+  const c = characters[charIdx];
+
+  let hairColor, shirtColor, pantsColor, shoeColor;
+  switch(charIdx) {
+    case 0: hairColor='#FFD700'; shirtColor='#FF6B9D'; pantsColor='#5B7DB1'; shoeColor='#8B4513'; break;
+    case 1: hairColor='#654321'; shirtColor='#4A90D9'; pantsColor='#3C3C3C'; shoeColor='#2C2C2C'; break;
+    case 2: hairColor='#2C1810'; shirtColor='#4CAF50'; pantsColor='#5C5C5C'; shoeColor='#3C3C3C'; break;
+    case 3: hairColor='#FFC800'; shirtColor='#9C27B0'; pantsColor='#4A69A0'; shoeColor='#6B3A2A'; break;
+    case 4: hairColor='#333'; shirtColor='#FFF'; pantsColor='#3C3C3C'; shoeColor='#2C2C2C'; break;
+    case 5: hairColor='#543321'; shirtColor='#E74C3C'; pantsColor='#2C3E50'; shoeColor='#2C2C2C'; break;
+    case 6: hairColor='#1A1A2E'; shirtColor='#00BCD4'; pantsColor='#5C5C5C'; shoeColor='#3C3C3C'; break;
+    case 7: hairColor='#654321'; shirtColor='#E53935'; pantsColor='#1565C0'; shoeColor='#2C2C2C'; break;
+    default: hairColor='#654321'; shirtColor='#4CAF50'; pantsColor='#3C3C3C'; shoeColor='#2C2C2C';
+  }
+
+  const skin = c.skinColor;
+  const skinDark = c.skinColor === '#8D5524' ? '#70441A' : '#E8C4A0';
+
+  drawRect(buf, 4, 18, 8, 1, 'rgba(0,0,0,0.15)');
+
+  const legOffset = frame === 0 ? 0 : 1;
+  if (dir === 2) drawRect(buf, 6, 17, 3, 2, shoeColor);
+  else if (dir === 3) drawRect(buf, 7, 17, 3, 2, shoeColor);
+  else {
+    drawRect(buf, 5, 17 + legOffset, 3, 2, shoeColor);
+    drawRect(buf, 9, 17 + (frame === 0 ? legOffset : 0), 3, 2, shoeColor);
+  }
+
+  if (dir === 2) drawRect(buf, 6, 13, 3, 4, pantsColor);
+  else if (dir === 3) drawRect(buf, 7, 13, 3, 4, pantsColor);
+  else {
+    drawRect(buf, 5, 13, 3, 4, pantsColor);
+    drawRect(buf, 9, 13, 3, 4, pantsColor);
+  }
+
+  if (charIdx === 4) {
+    drawRect(buf, 4, 6, 8, 8, shirtColor);
+    drawRect(buf, 7, 7, 1, 1, '#DDD');
+    drawRect(buf, 7, 9, 1, 1, '#DDD');
+  } else if (charIdx === 7) {
+    drawRect(buf, 4, 6, 8, 8, shirtColor);
+    drawRect(buf, 3, 7, 2, 10, '#C62828');
+    if (dir >= 2) drawRect(buf, 6, 8, 2, 2, '#FFD700');
+  } else drawRect(buf, 4, 6, 8, 8, shirtColor);
+
+  const armWave = (dir === 2 || dir === 3) ? 1 : 0;
+  drawRect(buf, 2, 7 + armWave, 2, 4, shirtColor);
+  drawRect(buf, 12, 7 + (dir >= 2 ? 0 : armWave), 2, 4, shirtColor);
+  drawRect(buf, 2, 11 + armWave, 2, 2, skin);
+  drawRect(buf, 12, 11 + (dir >= 2 ? 0 : armWave), 2, 2, skin);
+
+  drawCircle(buf, 8, 4, 4, skin);
+
+  if (charIdx === 4) {
+    drawCircle(buf, 8, 1, 4, '#FFF');
+    drawRect(buf, 5, 0, 6, 2, '#FFF');
+  } else if (c.hairStyle === 'long') {
+    drawRect(buf, 3, 1, 10, 3, hairColor);
+    if (dir === 0) drawRect(buf, 4, 2, 8, 2, hairColor);
+    else if (dir === 1) { drawRect(buf, 3, 1, 3, 7, hairColor); drawRect(buf, 10, 1, 3, 7, hairColor); }
+    else drawRect(buf, dir === 2 ? 2 : 11, 1, 3, 8, hairColor);
+  } else if (c.hairStyle === 'side') {
+    drawRect(buf, 4, 1, 8, 2, hairColor);
+    drawRect(buf, dir === 2 ? 2 : 11, 1, 3, 6, hairColor);
+  } else {
+    drawRect(buf, 4, 1, 8, 2, hairColor);
+    if (dir === 0) drawRect(buf, 3, 2, 10, 1, hairColor);
+    else if (dir === 1) drawRect(buf, 3, 1, 10, 3, hairColor);
+  }
+
+  if (dir === 0) {
+    drawRect(buf, 6, 4, 1, 1, '#333');
+    drawRect(buf, 9, 4, 1, 1, '#333');
+    drawRect(buf, 7, 6, 2, 1, '#E8A0A0');
+  } else if (dir === 2) {
+    drawRect(buf, 5, 4, 1, 1, '#333');
+    drawRect(buf, 6, 5, 2, 1, '#E8A0A0');
+  } else if (dir === 3) {
+    drawRect(buf, 10, 4, 1, 1, '#333');
+    drawRect(buf, 8, 5, 2, 1, '#E8A0A0');
+  }
+
+  return buf;
+}
+
+function drawSpriteToCanvas(canvas, buf, offsetX, offsetY) {
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  for (let y = 0; y < SPRITE_H; y++)
+    for (let x = 0; x < SPRITE_W; x++) {
+      const color = buf[y][x];
+      if (color) ctx.fillStyle = color;
+      ctx.fillRect(offsetX + x * SCALE, offsetY + y * SCALE, SCALE, SCALE);
+    }
+}
+
+function drawCharacter(canvas, charIdx, dir, frame) {
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const buf = buildCharSprite(charIdx, dir, frame);
+  drawSpriteToCanvas(canvas, buf, 0, 0);
+}
+
+function drawMiniSprite(canvas, charIdx) {
+  drawCharacter(canvas, charIdx, 0, 0);
+}
+
+// ============== ROOM LAYOUT ==============
+const cafeRooms = [
+  { id:'kitchen', label:'Kitchen', emoji:'👨‍🍳', cls:'room-kitchen',  x:1,  y:1,  w:23, h:23 },
+  { id:'magic',   label:'Magic',   emoji:'🧙',   cls:'room-magic',    x:25, y:1,  w:23, h:23 },
+  { id:'counter', label:'Counter', emoji:'🧑‍💼', cls:'room-counter',  x:49, y:1,  w:23, h:23 },
+  { id:'party',   label:'Party!',  emoji:'🎊',   cls:'room-party',    x:73, y:1,  w:25, h:23 },
+  { id:'treasure',label:'Treasure',emoji:'🏴‍☠️', cls:'room-treasure', x:1,  y:25, w:23, h:23 },
+  { id:'pet',     label:'Pets',    emoji:'🐶',   cls:'room-pet',      x:25, y:25, w:23, h:23 },
+  { id:'library', label:'Books',   emoji:'📚',   cls:'room-library',  x:49, y:25, w:23, h:23 },
+  { id:'seating', label:'Seating', emoji:'🪑',   cls:'room-seating',  x:73, y:25, w:25, h:23 },
+  { id:'paint',   label:'Art',     emoji:'🎨',   cls:'room-paint',    x:1,  y:50, w:23, h:23 },
+  { id:'sounds',  label:'Disney',  emoji:'🏰',   cls:'room-sounds',   x:25, y:50, w:23, h:23 },
+  { id:'garden',  label:'Garden',  emoji:'🌻',   cls:'room-garden',   x:49, y:50, w:23, h:23 },
+  { id:'play',    label:'Play',    emoji:'🎮',   cls:'room-play',     x:73, y:50, w:25, h:23 },
+  { id:'dance',   label:'Dance',   emoji:'💃',   cls:'room-dance',    x:1,  y:74, w:23, h:25 },
+  { id:'photo',   label:'Photo',   emoji:'📸',   cls:'room-photo',    x:25, y:74, w:23, h:25 },
+  { id:'game',    label:'Games',   emoji:'🎲',   cls:'room-game',     x:49, y:74, w:23, h:25 },
+  { id:'bath',    label:'Restroom',emoji:'🚻',   cls:'room-bath',     x:73, y:74, w:25, h:25 },
+];
+
+// ============== PLAYER ==============
+let player = { x: 50, y: 85, w: 3, h: 3, speed: 0.6, dir: 1 };
+let currentRoom = null;
+let keys = {};
+let spriteDir = 0, spriteFrame = 0, spriteAnimTimer = 0;
+
+// ============== ROOM STATE ==============
+let currentPrep = [], currentPrepKey = null;
+let pendingOrders = [], readyItems = [], seatedCustomers = [], queueCustomers = [];
+let customerCount = 0;
+
+// ============== AUDIO ==============
+function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+
+const melodyNotes = [
+  { freq:523.25,dur:0.18 },{ freq:587.33,dur:0.18 },{ freq:659.25,dur:0.18 },{ freq:523.25,dur:0.18 },
+  { freq:659.25,dur:0.18 },{ freq:587.33,dur:0.18 },{ freq:523.25,dur:0.35 },{ freq:0,dur:0.15 },
+  { freq:698.46,dur:0.18 },{ freq:783.99,dur:0.18 },{ freq:698.46,dur:0.18 },{ freq:659.25,dur:0.18 },
+  { freq:587.33,dur:0.18 },{ freq:523.25,dur:0.18 },{ freq:587.33,dur:0.35 },{ freq:0,dur:0.15 },
+  { freq:783.99,dur:0.18 },{ freq:698.46,dur:0.18 },{ freq:659.25,dur:0.18 },{ freq:698.46,dur:0.18 },
+  { freq:783.99,dur:0.18 },{ freq:880.00,dur:0.18 },{ freq:783.99,dur:0.35 },{ freq:0,dur:0.15 },
+  { freq:659.25,dur:0.18 },{ freq:783.99,dur:0.18 },{ freq:698.46,dur:0.18 },{ freq:659.25,dur:0.18 },
+  { freq:587.33,dur:0.35 },{ freq:523.25,dur:0.35 },{ freq:0,dur:0.30 },
+];
+const bassNotes = [
+  { freq:130.81,dur:0.72 },{ freq:130.81,dur:0.72 },{ freq:174.61,dur:0.72 },{ freq:174.61,dur:0.72 },
+  { freq:196.00,dur:0.72 },{ freq:196.00,dur:0.72 },{ freq:174.61,dur:0.72 },{ freq:130.81,dur:0.72 },
+];
+let melodyIndex = 0, bassIndex = 0;
+
+function playNote(freq, duration, type, volume) {
+  type = type || 'square'; volume = volume || 0.12;
+  if (!audioCtx || freq === 0) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+  gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.start(); osc.stop(audioCtx.currentTime + duration);
+}
+
+function scheduleMelody() {
+  if (!musicPlaying) return;
+  const note = melodyNotes[melodyIndex % melodyNotes.length];
+  playNote(note.freq, note.dur * 0.9, 'square', 0.08);
+  melodyIndex++;
+  musicLoopId = setTimeout(scheduleMelody, note.dur * 1000);
+}
+
+function scheduleBass() {
+  if (!musicPlaying) return;
+  const note = bassNotes[bassIndex % bassNotes.length];
+  playNote(note.freq, note.dur * 0.9, 'triangle', 0.05);
+  bassIndex++;
+  setTimeout(scheduleBass, note.dur * 1000);
+}
+
+function startMusic() {
+  initAudio(); musicPlaying = true; melodyIndex = 0; bassIndex = 0;
+  scheduleMelody(); scheduleBass(); updateMusicBtn(); spawnMusicNotes();
+}
+function stopMusic() { musicPlaying = false; if (musicLoopId) clearTimeout(musicLoopId); updateMusicBtn(); }
+function toggleMusic() { musicPlaying ? stopMusic() : startMusic(); }
+function updateMusicBtn() {
+  const btn = document.getElementById('music-btn');
+  btn.textContent = musicPlaying ? 'Music On' : 'Music Off';
+  btn.className = musicPlaying ? 'music-btn active' : 'music-btn';
+}
+
+function spawnMusicNotes() {
+  if (!musicPlaying) return;
+  const notes = ['♪','♫','♬','🎵','🎶'];
+  const el = document.createElement('div');
+  el.className = 'music-note';
+  el.textContent = notes[Math.floor(Math.random() * notes.length)];
+  el.style.left = Math.random() * window.innerWidth + 'px';
+  el.style.top = (window.innerHeight * 0.5 + Math.random() * 150) + 'px';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+  if (musicPlaying) setTimeout(spawnMusicNotes, 600);
+}
+
+function playSound(type) {
+  initAudio();
+  switch(type) {
+    case 'step': playNote(300, 0.05, 'sine', 0.05); break;
+    case 'enter': playNote(600, 0.1, 'sine', 0.15); break;
+    case 'ingredient': playNote(800, 0.1, 'sine', 0.15); break;
+    case 'serve': playNote(523.25, 0.15, 'sine', 0.2); setTimeout(()=>playNote(659.25,0.15,'sine',0.2),150); setTimeout(()=>playNote(783.99,0.3,'sine',0.2),300); break;
+    case 'perfect': [523.25,659.25,783.99,1046.50].forEach((f,i)=>setTimeout(()=>playNote(f,0.2,'sine',0.2),i*120)); break;
+    case 'wrong': playNote(200, 0.3, 'sawtooth', 0.1); break;
+    case 'bell': playNote(1200, 0.15, 'sine', 0.2); break;
+    case 'ding': playNote(880, 0.2, 'sine', 0.2); break;
+    case 'magic': [600,800,1000,1200,1400].forEach((f,i)=>setTimeout(()=>playNote(f,0.15,'sine',0.12),i*80)); break;
+    case 'coin': playNote(1600, 0.1, 'sine', 0.2); setTimeout(()=>playNote(2000,0.15,'sine',0.2),80); break;
+  }
+}
+
+// ============== KITCHEN ==============
+const ingredients = {
+  'coffee': { emoji:'☕', label:'Coffee' },
+  'milk': { emoji:'🥛', label:'Milk' },
+  'chocolate': { emoji:'🍫', label:'Chocolate' },
+  'caramel': { emoji:'🍯', label:'Caramel' },
+  'cream': { emoji:'🫧', label:'Cream' },
+  'ice': { emoji:'🧊', label:'Ice' },
+  'tea': { emoji:'🍵', label:'Tea' },
+  'water': { emoji:'💧', label:'Water' },
+  'strawberry': { emoji:'🍓', label:'Strawberry' },
+  'lemon': { emoji:'🍋', label:'Lemon' },
+  'dough': { emoji:'🫓', label:'Dough' },
+};
+
+function buildKitchenGrid() {
+  const grid = document.getElementById('kitchen-grid');
+  grid.innerHTML = '';
+  Object.keys(ingredients).forEach(key => {
+    const ing = ingredients[key];
+    const btn = document.createElement('div');
+    btn.className = 'ing-btn';
+    btn.innerHTML = `<span class="ing-emoji">${ing.emoji}</span><span class="ing-label">${ing.label}</span>`;
+    btn.onclick = () => addIngredient(key);
+    grid.appendChild(btn);
+  });
+}
+
+function addIngredient(key) {
+  playSound('ingredient');
+  currentPrep.push(key);
+  updatePrepDisplay();
+  spawnParticle(ingredients[key].emoji);
+  score += 1; updateUI();
+
+  const prepEl = document.getElementById('prep-items');
+  prepEl.classList.add('shake');
+  setTimeout(() => prepEl.classList.remove('shake'), 200);
+
+  if (currentPrepKey) {
+    const recipe = recipes[currentPrepKey];
+    const needed = [...recipe.ingredients];
+    const have = [...currentPrep];
+    let allMatch = true;
+    for (const ing of needed) { const idx = have.indexOf(ing); if (idx === -1) { allMatch = false; break; } have.splice(idx, 1); }
+    if (allMatch && currentPrep.length === needed.length) {
+      document.getElementById('prep-recipe-name').textContent = recipe.emoji + ' ' + recipe.name + ' — CLICK FINISH!';
+      document.getElementById('prep-recipe-name').style.color = '#4ecdc4';
+      spawnConfetti(5);
+    }
+  }
+}
+
+function updatePrepDisplay() {
+  const prepEl = document.getElementById('prep-items');
+  prepEl.innerHTML = '';
+  currentPrep.forEach(k => {
+    const span = document.createElement('span');
+    span.className = 'prep-item';
+    span.textContent = ingredients[k].emoji;
+    prepEl.appendChild(span);
+  });
+}
+
+function finishItem() {
+  if (currentPrep.length === 0) return;
+  let matchedOrder = null, matchedIdx = -1;
+  for (let i = 0; i < pendingOrders.length; i++) {
+    const order = pendingOrders[i];
+    const recipe = recipes[order.recipeKey];
+    const needed = [...recipe.ingredients];
+    const have = [...currentPrep];
+    let allMatch = true;
+    for (const ing of needed) { const idx = have.indexOf(ing); if (idx === -1) { allMatch = false; break; } have.splice(idx, 1); }
+    if (allMatch && currentPrep.length === needed.length) { matchedOrder = order; matchedIdx = i; break; }
+  }
+  if (matchedOrder) {
+    pendingOrders.splice(matchedIdx, 1);
+    matchedOrder.status = 'ready';
+    readyItems.push(matchedOrder);
+    const earnScore = 10 * level;
+    const earnCoins = 5 * level;
+    score += earnScore; coins += earnCoins;
+    playSound('perfect');
+    spawnConfetti(10);
+    spawnParticles(['⭐','🌟','✨','🎉','🥳','💖'], 10);
+    showScorePopup('+' + earnScore);
+    const msgs = ['DELICIOUS!', 'Perfectly made!', "Chef's kiss!", 'Yummy!', 'Amazing creation!'];
+    showMessage(matchedOrder.recipeEmoji + ' ' + matchedOrder.recipeName + ' — ' + msgs[Math.floor(Math.random()*msgs.length)]);
+    addCombo();
+    checkLevelUp();
+  } else {
+    playSound('wrong');
+    document.getElementById('prep-cup').classList.add('shake');
+    setTimeout(() => document.getElementById('prep-cup').classList.remove('shake'), 400);
+    showMessage("That doesn't match. Try again!");
+    spawnParticles(['❓','🤔'], 5);
+  }
+  currentPrep = []; currentPrepKey = null;
+  updatePrepDisplay();
+  document.getElementById('prep-recipe-name').textContent = '';
+  updateUI(); renderKitchenOrders();
+}
+
+function trashPrep() {
+  currentPrep = []; currentPrepKey = null;
+  updatePrepDisplay();
+  document.getElementById('prep-recipe-name').textContent = '';
+  playSound('ding');
+}
+
+function renderKitchenOrders() {
+  const container = document.getElementById('kitchen-orders');
+  if (pendingOrders.length === 0) {
+    container.innerHTML = '<div class="empty-msg">No orders! Go to the Counter to get orders.</div>';
+    return;
+  }
+  container.innerHTML = '';
+  pendingOrders.forEach(order => {
+    const recipe = recipes[order.recipeKey];
+    const card = document.createElement('div');
+    card.className = 'recipe-card';
+    let ingHTML = recipe.ingredients.map(i => `<span class="recipe-ing">${ingredients[i].emoji} ${ingredients[i].label}</span>`).join('');
+    card.innerHTML = `
+      <div class="recipe-card-header">
+        <span class="recipe-card-emoji">${recipe.emoji}</span>
+        <span class="recipe-card-name">${recipe.name}</span>
+      </div>
+      <div class="recipe-ingredients-list">${ingHTML}</div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+// ============== CUSTOMERS ==============
+const customerNames = ['Lily','Max','Zoe','Sam','Mia','Leo','Ava','Jay','Ivy','Rex','Nora','Finn','Ella','Oli','Kim'];
+const customerAvatars = ['👧','👦','👩','👨','🧒','👵','👴','🧑','👱‍♀️','👱‍♂️','👩‍🦰','👨‍🦱','🧔','👲','🧕'];
+
+function addCustomer() {
+  playSound('bell');
+  const name = customerNames[customerCount % customerNames.length];
+  const avatar = customerAvatars[customerCount % customerAvatars.length];
+  customerCount++;
+  const recipeKeys = Object.keys(recipes);
+  const recipeKey = recipeKeys[Math.floor(Math.random() * recipeKeys.length)];
+  const recipe = recipes[recipeKey];
+  queueCustomers.push({ id: Date.now() + Math.random(), name, avatar, recipeKey, recipeEmoji: recipe.emoji, recipeName: recipe.name, ingredients: recipe.ingredients });
+  renderQueue();
+}
+
+function renderQueue() {
+  const list = document.getElementById('queue-list');
+  const empty = document.getElementById('queue-empty');
+  list.innerHTML = '';
+  empty.style.display = queueCustomers.length === 0 ? 'block' : 'none';
+  queueCustomers.forEach((c, i) => {
+    const div = document.createElement('div');
+    div.className = 'queue-customer';
+    div.innerHTML = `
+      <div class="qc-avatar">${c.avatar}</div>
+      <div><div class="qc-name">${c.name}</div><div class="qc-order">${c.recipeEmoji} ${c.recipeName}</div></div>
+      <button class="take-order-btn" onclick="takeOrder(${i})">Take Order</button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function takeOrder(idx) {
+  playSound('ding');
+  const customer = queueCustomers.splice(idx, 1)[0];
+  pendingOrders.push({ ...customer, status: 'pending' });
+  seatedCustomers.push({ ...customer, mood: 'waiting' });
+  renderQueue();
+  showMessage(customer.avatar + customer.name + ' is seated! Go to the Kitchen to make their order.');
+}
+
+function renderSeating() {
+  const container = document.getElementById('seating-content');
+  container.innerHTML = '';
+  if (seatedCustomers.length === 0) {
+    container.innerHTML = '<div class="empty-msg">No customers seated yet!</div>';
+    return;
+  }
+  seatedCustomers.forEach((c, i) => {
+    const hasReady = readyItems.some(r => r.id === c.id);
+    const mood = hasReady ? '🥰' : '🤤';
+    const div = document.createElement('div');
+    div.className = 'customer-card';
+    div.innerHTML = `
+      <div class="customer-avatar">${c.avatar}</div>
+      <div class="customer-info">
+        <div class="customer-name">${c.name}</div>
+        <div class="customer-order">Ordered: <b>${c.recipeEmoji} ${c.recipeName}</b></div>
+        ${hasReady ? '<div style="color:#4ecdc4;font-weight:700;margin-top:4px;">Ready to serve!</div>' : ''}
+      </div>
+      <div class="customer-mood">${mood}</div>
+      ${hasReady ? `<button class="serve-btn" onclick="serveCustomer(${i})">Serve!</button>` : '<div style="font-size:0.8em;color:#888;margin-top:4px;">Waiting...</div>'}
+    `;
+    container.appendChild(div);
+  });
+}
+
+function serveCustomer(idx) {
+  const customer = seatedCustomers[idx];
+  const readyIdx = readyItems.findIndex(r => r.id === customer.id);
+  if (readyIdx === -1) { showMessage("You haven't made that yet! Go to the Kitchen!"); return; }
+  playSound('serve');
+  readyItems.splice(readyIdx, 1);
+  seatedCustomers.splice(idx, 1);
+  const earnScore = 25 * level;
+  const earnCoins = 10 * level;
+  score += earnScore; coins += earnCoins;
+  const reactions = ['"OMG this is AMAZING!"','"Best ever!"',"You're the best!","Wow wow WOW!","I'll be back!","This made my day!","Super duper awesome!"];
+  const reaction = reactions[Math.floor(Math.random() * reactions.length)];
+  spawnParticles(['⭐','🌟','✨','💛','🎉','🥳','😍','💖'], 12);
+  showScorePopup('+' + earnScore, window.innerWidth/2 - 20, window.innerHeight/2 - 30);
+  showMessage(customer.avatar + ' ' + customer.name + ': ' + reaction);
+  checkLevelUp();
+  addCombo();
+  updateUI();
+  renderSeating();
+}
+
+// ============== MAGIC ==============
+let potionMix = [];
+const potionResults = {
+  '🌈⭐🍀': 'Rainbow Star Smoothie! 🌈 Makes you invisible!',
+  '🔮🧁🍄': 'Mushroom Muffin Potion! 🍄 Makes everything delicious!',
+  '🌸🫧🌈': 'Bubble Flower Latte! 🌸 Floats to the ceiling!',
+  '⭐🔮🫧': 'Sparkle Sparkling Water! ✨ Glows in the dark!',
+  '🍀🧁🌸': 'Clover Cupcake Potion! 🍀 Grants one wish!',
+  '🌈🍄🌸': 'Magic Garden Tea! 🌺 Smells like a thousand flowers!',
+  '🔮🍀⭐': 'Crystal Star Coffee! ⭐ Gives you super energy!',
+  '🧁🌈🔮': 'Magic Cake Frappuccino! 🎂 Tastes like a fairy tale!',
+};
+
+function addPotionIng(emoji) {
+  playSound('magic');
+  potionMix.push(emoji);
+  renderPotionMix();
+  spawnParticle(emoji);
+  score += 1; updateUI();
+}
+
+function renderPotionMix() {
+  document.getElementById('potion-mix').innerHTML = potionMix.map(e => `<span style="font-size:2em;">${e}</span>`).join(' ');
+  const cauldron = document.getElementById('cauldron');
+  cauldron.classList.add('shake');
+  setTimeout(() => cauldron.classList.remove('shake'), 400);
+}
+
+function castSpell() {
+  if (potionMix.length < 2) { showMessage('Add at least 2 ingredients first!'); return; }
+  playSound('magic');
+  document.getElementById('cauldron').textContent = '💥';
+  document.getElementById('cauldron').classList.add('shake');
+  spawnConfetti(20);
+  const key = [...potionMix].sort().join('');
+  const result = potionResults[key] || `Amazing Magic Mix! 🎉 Secret potion with ${potionMix.join(' ')}!`;
+  setTimeout(() => {
+    document.getElementById('cauldron').textContent = '🧪';
+    document.getElementById('cauldron').classList.remove('shake');
+    document.getElementById('potion-result').textContent = result;
+    score += 5; coins += 3;
+    showMessage('✨ ' + result);
+    potionMix = [];
+    renderPotionMix();
+    updateUI();
+  }, 600);
+}
+
+function clearPotion() {
+  potionMix = [];
+  renderPotionMix();
+  document.getElementById('potion-result').textContent = '';
+}
+
+// ============== TREASURE ==============
+let treasureCards = [], treasureFlipped = [], treasureMatched = 0, treasureLocked = false;
+const treasureEmojis = ['☕','🍰','🧁','🍪','🍩','🎂','🍫','🍭'];
+
+function initTreasure() {
+  const emojis = [...treasureEmojis, ...treasureEmojis];
+  treasureCards = emojis.sort(() => Math.random() - 0.5);
+  treasureFlipped = new Array(treasureCards.length).fill(false);
+  treasureMatched = 0;
+  treasureLocked = false;
+  document.getElementById('treasure-msg').textContent = '';
+  renderTreasure();
+}
+
+function renderTreasure() {
+  const grid = document.getElementById('treasure-grid');
+  grid.innerHTML = '';
+  treasureCards.forEach((emoji, i) => {
+    const card = document.createElement('div');
+    card.className = 'treasure-card' + (treasureFlipped[i] ? ' revealed' : '');
+    card.textContent = treasureFlipped[i] ? emoji : '?';
+    card.onclick = () => flipTreasure(i);
+    grid.appendChild(card);
+  });
+}
+
+function flipTreasure(idx) {
+  if (treasureLocked || treasureFlipped[idx]) return;
+  treasureFlipped[idx] = true;
+  playSound('bell');
+  renderTreasure();
+
+  const flipped = treasureCards.map((e, i) => treasureFlipped[i] ? i : -1).filter(i => i >= 0);
+  if (flipped.length === 2) {
+    treasureLocked = true;
+    if (treasureCards[flipped[0]] === treasureCards[flipped[1]]) {
+      treasureMatched++;
+      score += 15; coins += 8;
+      playSound('perfect');
+      showMessage('Match found! ' + treasureCards[flipped[0]]);
+      setTimeout(() => { treasureLocked = false; renderTreasure(); }, 500);
+      if (treasureMatched === treasureEmojis.length) {
+        score += 50 * level; coins += 20 * level;
+        spawnConfetti(20);
+        showMessage('All pairs found! Amazing!');
+        checkLevelUp();
+        updateUI();
+      }
+      updateUI();
+    } else {
+      playSound('wrong');
+      setTimeout(() => {
+        treasureFlipped[flipped[0]] = false;
+        treasureFlipped[flipped[1]] = false;
+        treasureLocked = false;
+        renderTreasure();
+      }, 800);
+    }
+  }
+}
+
+function resetTreasure() {
+  playSound('ding');
+  initTreasure();
+}
+
+// ============== ART STUDIO ==============
+let paintColor = '#FF6B6B';
+let paintEmoji = null;
+const paintColors = ['#FF6B6B','#4ecdc4','#45b7d1','#ffd93d','#6c5ce7','#a29bfe','#fd79a8','#55efc4','#ff9ff3','#333','#FFF'];
+
+function initArtStudio() {
+  const container = document.getElementById('paint-colors');
+  container.innerHTML = '';
+  paintColors.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'paint-color' + (c === paintColor ? ' selected' : '');
+    div.style.background = c;
+    div.onclick = () => { paintColor = c; paintEmoji = null; container.querySelectorAll('.paint-color').forEach(d => d.classList.remove('selected')); div.classList.add('selected'); };
+    container.appendChild(div);
+  });
+}
+
+function setPaintEmoji(emoji) {
+  paintEmoji = emoji;
+  paintColor = null;
+  document.getElementById('paint-colors').querySelectorAll('.paint-color').forEach(d => d.classList.remove('selected'));
+}
+
+function clearArt() {
+  document.getElementById('art-display').innerHTML = '';
+  playSound('ding');
+}
+
+document.addEventListener('click', (e) => {
+  const art = document.getElementById('art-display');
+  if (!art) return;
+  const rect = art.getBoundingClientRect();
+  if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom && (paintColor || paintEmoji)) {
+    const item = document.createElement('div');
+    item.className = 'art-item';
+    if (paintEmoji) {
+      item.textContent = paintEmoji;
+      item.style.fontSize = '2em';
+    } else {
+      item.style.width = '20px';
+      item.style.height = '20px';
+      item.style.background = paintColor;
+      item.style.borderRadius = '50%';
+    }
+    item.style.left = (e.clientX - rect.left - 10) + 'px';
+    item.style.top = (e.clientY - rect.top - 10) + 'px';
+    art.appendChild(item);
+    score += 1;
+    updateUI();
+  }
+});
+
+// ============== DISNEY MUSIC ==============
+const disneySongs = [
+  { name: "He's a Pirate", emoji: '🏴‍☠️', notes: [392,440,392,330,392,440,392,330,392,494,392,330,349,392,440] },
+  { name: "Circle of Life", emoji: '🦁', notes: [330,349,392,440,523,440,392,349,330,349,392,330] },
+  { name: "Under the Sea", emoji: '🐠', notes: [523,523,587,659,523,587,523,440,523] },
+  { name: "A Whole New World", emoji: '🧞', notes: [392,440,523,587,523,440,392,330,349,392] },
+  { name: "Let It Go", emoji: '❄️', notes: [523,523,587,659,659,587,523,523,440,523,587,659] },
+  { name: "Part of Your World", emoji: '🧜', notes: [349,392,440,523,440,392,349,330,349,392] },
+  { name: "Hakuna Matata", emoji: '🐗', notes: [392,392,440,392,523,587,523,440,392] },
+  { name: "Be Our Guest", emoji: '🕯️', notes: [523,587,659,784,659,587,523,659,784] },
+  { name: "When You Wish", emoji: '⭐', notes: [523,523,587,659,659,587,523,440,523] },
+];
+
+let currentSong = null, songInterval = null, discoActive = false, dancerCount = 4;
+
+function initSoundGrid() {
+  const grid = document.getElementById('sound-grid');
+  grid.innerHTML = '';
+  disneySongs.forEach((song, i) => {
+    const btn = document.createElement('div');
+    btn.className = 'sound-btn';
+    btn.innerHTML = `<span class="sound-emoji">${song.emoji}</span><span class="sound-name">${song.name}</span>`;
+    btn.onclick = () => playDisneySong(i);
+    grid.appendChild(btn);
+  });
+}
+
+function playDisneySong(idx) {
+  stopDisneySong();
+  initAudio();
+  currentSong = disneySongs[idx];
+  let noteIdx = 0;
+  document.getElementById('now-playing').textContent = currentSong.emoji + ' ' + currentSong.name;
+  document.getElementById('now-playing').classList.add('singing');
+  document.getElementById('visualizer').classList.add('active');
+  document.querySelectorAll('.dancer').forEach(d => d.classList.add('dancing'));
+  songInterval = setInterval(() => {
+    if (!currentSong) return;
+    const note = currentSong.notes[noteIdx % currentSong.notes.length];
+    playNote(note, 0.25, 'sine', 0.2);
+    noteIdx++;
+    const lyr = document.getElementById('karaoke-lyrics');
+    const syllables = ['La','la','la','la','la','la','la','la','la','la','la','la','la','la','la'];
+    lyr.innerHTML = `<span class="highlight">${syllables[noteIdx % syllables.length]}</span> ` + syllables.slice(0, noteIdx % 5).map(() => '♪ ').join('');
+  }, 300);
+}
+
+function stopDisneySong() {
+  if (songInterval) clearInterval(songInterval);
+  songInterval = null;
+  currentSong = null;
+  document.getElementById('now-playing').textContent = '';
+  document.getElementById('now-playing').classList.remove('singing');
+  document.getElementById('visualizer').classList.remove('active');
+  document.getElementById('karaoke-lyrics').textContent = 'Pick a song to sing along!';
+  document.querySelectorAll('.dancer').forEach(d => d.classList.remove('dancing'));
+}
+
+function toggleDisco() {
+  discoActive = !discoActive;
+  const el = document.getElementById('screen-sounds');
+  const btn = document.getElementById('disco-btn');
+  if (discoActive) { el.classList.add('disco-active'); btn.textContent = 'Disco Off'; }
+  else { el.classList.remove('disco-active'); btn.textContent = 'Disco Mode'; }
+}
+
+function addDancer() {
+  const stage = document.getElementById('music-dancer-stage');
+  const dancers = ['💃','🕺','🦸','👸','🤴','🧝‍♀️','🧝‍♂️','🎅','👼'];
+  const d = document.createElement('div');
+  d.className = 'dancer';
+  d.textContent = dancers[Math.floor(Math.random() * dancers.length)];
+  d.onclick = () => { d.classList.toggle('dancing'); playSound('bell'); };
+  stage.appendChild(d);
+  dancerCount++;
+}
+
+// ============== GARDEN ==============
+let currentTool = 'seed';
+const gardenPlants = ['🌱','🌿','🌻','🌹','🌷','🌺','🍀','🌼','🪻','🪷'];
+let gardenPlots = [];
+
+function initGarden() {
+  gardenPlots = new Array(12).fill(null);
+  renderGarden();
+}
+
+function renderGarden() {
+  const grid = document.getElementById('garden-grid');
+  grid.innerHTML = '';
+  gardenPlots.forEach((plant, i) => {
+    const plot = document.createElement('div');
+    plot.className = 'garden-plot';
+    plot.textContent = plant || '🟫';
+    plot.onclick = () => useGardenTool(i);
+    grid.appendChild(plot);
+  });
+}
+
+function selectTool(tool) {
+  currentTool = tool;
+  document.querySelectorAll('.plant-tool').forEach(t => t.classList.remove('selected'));
+  document.getElementById('tool-' + tool).classList.add('selected');
+}
+
+function useGardenTool(idx) {
+  playSound('bell');
+  switch(currentTool) {
+    case 'seed':
+      if (!gardenPlots[idx]) { gardenPlots[idx] = '🌱'; score += 2; }
+      else { gardenPlots[idx] = gardenPlants[Math.floor(Math.random()*gardenPlants.length)]; score += 5; }
+      break;
+    case 'water':
+      if (gardenPlots[idx]) { gardenPlots[idx] = gardenPlants[Math.floor(Math.random()*gardenPlants.length)]; score += 3; showMessage('Watered! ' + gardenPlots[idx]); }
+      break;
+    case 'sun':
+      if (gardenPlots[idx]) { score += 3; spawnParticle('☀️'); showMessage('Sunshine!'); }
+      break;
+    case 'flower':
+      if (!gardenPlots[idx]) { gardenPlots[idx] = gardenPlants[Math.floor(Math.random()*gardenPlants.length)]; score += 3; }
+      break;
+  }
+  coins += 1;
+  renderGarden();
+  updateUI();
+  document.getElementById('garden-msg').textContent = gardenPlots.filter(Boolean).length + ' plants growing!';
+}
+
+// ============== PARTY ROOM ==============
+const partyItems = [
+  { emoji: '🎂', name: 'Cake' }, { emoji: '🎈', name: 'Balloon' }, { emoji: '🎉', name: 'Party Popper' },
+  { emoji: '🎊', name: 'Confetti' }, { emoji: '🍰', name: 'Cake Slice' }, { emoji: '🧁', name: 'Cupcake' },
+  { emoji: '🎁', name: 'Gift' }, { emoji: '🎀', name: 'Ribbon' }, { emoji: '🪅', name: 'Piñata' },
+];
+
+function initParty() {
+  const grid = document.getElementById('party-grid');
+  grid.innerHTML = '';
+  partyItems.forEach(item => {
+    const btn = document.createElement('div');
+    btn.className = 'sound-btn';
+    btn.innerHTML = `<span class="sound-emoji">${item.emoji}</span><span class="sound-name">${item.name}</span>`;
+    btn.onclick = () => { playSound('bell'); spawnParticle(item.emoji); score += 2; updateUI(); };
+    grid.appendChild(btn);
+  });
+}
+
+function partyConfetti() {
+  spawnConfetti(20);
+  playSound('perfect');
+  document.getElementById('party-message').textContent = '🎉 PARTY TIME! 🎉';
+}
+
+function partyDance() {
+  playSound('ding');
+  document.getElementById('party-message').textContent = '💃 Dance party! 💃';
+  spawnParticles(['💃','🕺','🎵','🎶'], 8);
+}
+
+// ============== PET CORNER ==============
+const pets = [
+  { emoji: '🐶', name: 'Dog', sound: 'Woof!' }, { emoji: '🐱', name: 'Cat', sound: 'Meow!' },
+  { emoji: '🐰', name: 'Bunny', sound: '*hop hop*' }, { emoji: '🐹', name: 'Hamster', sound: '*squeak*' },
+  { emoji: '🐸', name: 'Frog', sound: 'Ribbit!' }, { emoji: '🐻', name: 'Bear', sound: 'Grrr!' },
+  { emoji: '🦊', name: 'Fox', sound: 'What does it say?' }, { emoji: '🐼', name: 'Panda', sound: '*chomp*' },
+  { emoji: '🦄', name: 'Unicorn', sound: '✨ Magic! ✨' },
+];
+
+function initPets() {
+  const grid = document.getElementById('pet-grid');
+  grid.innerHTML = '';
+  pets.forEach(pet => {
+    const btn = document.createElement('div');
+    btn.className = 'sound-btn';
+    btn.innerHTML = `<span class="sound-emoji">${pet.emoji}</span><span class="sound-name">${pet.name}</span>`;
+    btn.onclick = () => {
+      playSound('bell');
+      spawnParticle(pet.emoji);
+      document.getElementById('pet-msg').textContent = pet.emoji + ' ' + pet.sound;
+      score += 2; coins += 1;
+      updateUI();
+    };
+    grid.appendChild(btn);
+  });
+}
+
+// ============== BOOK NOOK ==============
+const books = [
+  { title: 'The Brave Knight', emoji: '⚔️', text: 'Once upon a time, a brave knight set off on a quest to find the legendary Starbucks of Dreams. Along the way, they met talking animals, crossed magical bridges, and brewed the perfect cup of coffee. The end! ...or is it?' },
+  { title: 'Space Coffee', emoji: '🚀', text: 'Captain Barista zoomed through the galaxy in search of the rarest beans. "Coffee or bust!" they declared, landing on Planet Mocha where the rivers flow with hot chocolate and the trees grow caramel. The crew cheered and brewed the first intergalactic latte!' },
+  { title: 'The Magic Garden', emoji: '🌺', text: 'Little Mia discovered a secret garden behind the Starbucks. Every plant sang a different note, and together they made the most beautiful music in the world. She watered them with love and the garden grew taller and taller until it touched the clouds!' },
+  { title: 'Dragon Buddy', emoji: '🐉', text: 'When Jake found a tiny dragon egg in his coffee cup sleeve, he never expected it to hatch! The little dragon loved warm lattes and would toast marshmallows with its breath. They became best friends and opened a bakery together.' },
+  { title: 'Underwater Cafe', emoji: '🧜', text: 'Diving deep below the ocean, Marina discovered an underwater Starbucks run by friendly merfolk. The seahorses delivered drinks, the octopus made pastries with all 8 arms, and the coral created the most beautiful cafe ever!' },
+];
+
+function initLibrary() {
+  const list = document.getElementById('book-list');
+  list.innerHTML = '';
+  books.forEach((book, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'magic-btn';
+    btn.textContent = book.emoji + ' ' + book.title;
+    btn.onclick = () => readBook(i);
+    list.appendChild(btn);
+  });
+}
+
+function readBook(idx) {
+  const book = books[idx];
+  document.getElementById('book-title').textContent = book.emoji + ' ' + book.title;
+  document.getElementById('book-text').textContent = book.text;
+  playSound('bell');
+  score += 5; updateUI();
+}
+
+// ============== PLAY AREA ==============
+function playDice() {
+  const emojis = ['⚀','⚁','⚂','⚃','⚄','⚅'];
+  const result = Math.floor(Math.random() * 6);
+  document.getElementById('play-title').textContent = 'You rolled: ' + emojis[result];
+  document.getElementById('play-text').textContent = (result + 1) + ' points!';
+  document.getElementById('play-emoji-stage').innerHTML = `<span style="font-size:3em;animation:spinEmoji 0.5s;">${emojis[result]}</span>`;
+  score += result + 1; coins += 1;
+  playSound('bell'); updateUI();
+}
+
+function playRockPaper() {
+  const choices = ['🪨','📄','✂️'];
+  const player = Math.floor(Math.random() * 3);
+  const cpu = Math.floor(Math.random() * 3);
+  let result = 'Tie!';
+  if ((player + 1) % 3 !== cpu) { result = 'You win! 🎉'; score += 10; }
+  else if (player !== cpu) { result = 'You lose! 😅'; }
+  document.getElementById('play-title').textContent = choices[player] + ' vs ' + choices[cpu];
+  document.getElementById('play-text').textContent = result;
+  document.getElementById('play-emoji-stage').textContent = '';
+  playSound(result === 'You win! 🎉' ? 'perfect' : 'wrong');
+  updateUI();
+}
+
+const simonColors = ['🔴','🟢','🔵','🟡'];
+function playSimon() {
+  const seq = [];
+  for (let i = 0; i < 5; i++) seq.push(Math.floor(Math.random() * 4));
+  document.getElementById('play-title').textContent = 'Watch the sequence!';
+  document.getElementById('play-text').textContent = '';
+  let i = 0;
+  const iv = setInterval(() => {
+    if (i >= seq.length) { clearInterval(iv); document.getElementById('play-title').textContent = 'Your turn!'; return; }
+    document.getElementById('play-emoji-stage').innerHTML = `<span style="font-size:3em;">${simonColors[seq[i]]}</span>`;
+    playNote(300 + seq[i] * 100, 0.3, 'sine', 0.2);
+    i++;
+  }, 600);
+}
+
+function playJoke() {
+  const jokes = [
+    { q: 'Why did the coffee file a police report?', a: 'It got mugged! ☕' },
+    { q: 'What do you call a sleeping dinosaur?', a: 'A Dino-snore! 🦕' },
+    { q: 'Why did the starbucks cup go to school?', a: 'It wanted to be a little brighter! ⭐' },
+    { q: 'What do you get when you cross coffee and snow?', a: 'A Frappuccino! ❄️' },
+    { q: 'Why did the cookie go to the doctor?', a: 'It felt crummy! 🍪' },
+  ];
+  const joke = jokes[Math.floor(Math.random() * jokes.length)];
+  document.getElementById('play-title').textContent = joke.q;
+  document.getElementById('play-text').textContent = joke.a;
+  playSound('bell'); score += 2; updateUI();
+}
+
+function playSlap() {
+  const results = ['SLAP! 🖐️ You win!', 'SLAP! 🖐️ You lose!', 'SLAP! 🤝 Tie!'];
+  const result = results[Math.floor(Math.random() * results.length)];
+  document.getElementById('play-title').textContent = result;
+  document.getElementById('play-text').textContent = '';
+  document.getElementById('play-emoji-stage').innerHTML = '<span style="font-size:3em;animation:shake 0.4s;">🤚</span>';
+  playSound(result.includes('win') ? 'perfect' : 'wrong');
+  if (result.includes('win')) { score += 10; coins += 3; }
+  updateUI();
+}
+
+function playSpin() {
+  const prizes = ['🎉 Win 10 coins!','😅 Nothing!','🌟 Win 20 coins!','💫 Try again!','🎁 Surprise bonus!'];
+  const prize = prizes[Math.floor(Math.random() * prizes.length)];
+  document.getElementById('play-title').textContent = prize;
+  document.getElementById('play-text').textContent = '';
+  document.getElementById('play-emoji-stage').innerHTML = '<span style="font-size:3em;animation:spinEmoji 1s;">🎡</span>';
+  playSound('bell');
+  if (prize.includes('Win')) { const amount = prize.includes('20') ? 20 : 10; coins += amount; }
+  if (prize.includes('bonus')) { score += 15; coins += 5; }
+  updateUI();
+}
+
+// ============== DANCE ROOM ==============
+let danceInterval = null;
+
+function startDance() {
+  if (danceInterval) return;
+  const lights = ['dl1','dl2','dl3','dl4','dl5','dl6','dl7','dl8'];
+  let li = 0;
+  document.querySelectorAll('#dance-stage-area .dancer').forEach(d => d.classList.add('dancing'));
+  danceInterval = setInterval(() => {
+    lights.forEach(id => { document.getElementById(id).style.opacity = '0.3'; });
+    const idx = li % lights.length;
+    const el = document.getElementById(lights[idx]);
+    el.style.opacity = '1';
+    playNote(300 + idx * 50, 0.15, 'sine', 0.1);
+    li++;
+  }, 200);
+  document.getElementById('dance-msg').textContent = '🎶 Grooving! 🎶';
+}
+
+function stopDance() {
+  if (danceInterval) clearInterval(danceInterval);
+  danceInterval = null;
+  document.querySelectorAll('#dance-stage-area .dancer').forEach(d => d.classList.remove('dancing'));
+  document.getElementById('dance-msg').textContent = 'Music stopped';
+}
+
+function clickDancer(el) {
+  el.classList.toggle('dancing');
+  playSound('bell');
+  score += 1; updateUI();
+}
+
+// ============== PHOTO BOOTH ==============
+let photoProps = [], photoGallery = [];
+
+function setPhotoProp(emoji) {
+  photoProps.push(emoji);
+  playSound('bell');
+  const display = document.getElementById('photo-display');
+  display.textContent = '🤳' + photoProps.join('');
+}
+
+function takePhoto() {
+  playSound('ding');
+  const display = document.getElementById('photo-display');
+  display.classList.add('flash');
+  setTimeout(() => display.classList.remove('flash'), 500);
+  photoGallery.push(display.textContent);
+  renderPhotoGallery();
+  score += 3; coins += 1;
+  showMessage('📸 Cheese! Got a new photo!');
+  updateUI();
+  photoProps = [];
+  display.textContent = '🤳';
+}
+
+function randomPhoto() {
+  const emojis = ['🎩','👑','🥳','😎','🧐','🤩','🤡','👻','🐱','🐶','🦊','🎀','🌈'];
+  const count = Math.floor(Math.random() * 4) + 1;
+  photoProps = [];
+  for (let i = 0; i < count; i++) photoProps.push(emojis[Math.floor(Math.random() * emojis.length)]);
+  const display = document.getElementById('photo-display');
+  display.textContent = '🤳' + photoProps.join('');
+}
+
+function renderPhotoGallery() {
+  const gallery = document.getElementById('photo-gallery');
+  gallery.innerHTML = '';
+  photoGallery.forEach((photo, i) => {
+    const item = document.createElement('span');
+    item.className = 'photo-gallery-item';
+    item.textContent = photo;
+    item.title = 'Photo #' + (i + 1);
+    gallery.appendChild(item);
+  });
+  document.getElementById('photo-count').textContent = photoGallery.length + ' photos taken!';
+}
+
+// ============== GAME ROOM ==============
+function playSnake() {
+  const hidden = Math.random() > 0.5 ? '🐍' : '🐉';
+  document.getElementById('game-title').textContent = 'Guess what\'s behind the rock!';
+  const stage = document.getElementById('game-text');
+  stage.innerHTML = '';
+  const choices = ['🐍','🐉','🐸'];
+  choices.forEach(choice => {
+    const btn = document.createElement('span');
+    btn.style.cssText = 'font-size:2em;cursor:pointer;margin:0 8px;display:inline-block;';
+    btn.textContent = choice;
+    btn.onclick = () => {
+      if (choice === hidden) { stage.innerHTML += '<br>🎉 You found it! ' + choice; score += 15; coins += 5; playSound('perfect'); }
+      else { stage.innerHTML += '<br>❌ It was a ' + hidden; playSound('wrong'); }
+      updateUI();
+    };
+    stage.appendChild(btn);
+  });
+}
+
+function playSlot() {
+  const symbols = ['☕','⭐','💎','🍀','7️⃣'];
+  const reels = [0,1,2].map(() => symbols[Math.floor(Math.random() * symbols.length)]);
+  document.getElementById('game-title').textContent = reels.join(' ');
+  if (reels[0] === reels[1] && reels[1] === reels[2]) {
+    document.getElementById('game-text').textContent = '🎉 JACKPOT! +50 coins!';
+    coins += 50; score += 50; spawnConfetti(20); playSound('perfect');
+  } else if (reels[0] === reels[1] || reels[1] === reels[2] || reels[0] === reels[2]) {
+    document.getElementById('game-text').textContent = 'Close! Two match! +10 coins';
+    coins += 10; score += 10; playSound('ding');
+  } else {
+    document.getElementById('game-text').textContent = 'Try again!';
+    playSound('wrong');
+  }
+  updateUI();
+}
+
+let memCards = [], memFlipped = [], memMatched = 0, memLocked = false;
+
+function playMemory() {
+  const emojis = ['☕','⭐','💎','🍀','🎵','🌈'];
+  const pairs = [...emojis, ...emojis].sort(() => Math.random() - 0.5);
+  memCards = pairs; memFlipped = new Array(pairs.length).fill(false); memMatched = 0; memLocked = false;
+  document.getElementById('game-title').textContent = 'Find the matching pairs!';
+  document.getElementById('game-text').textContent = '';
+  const stage = document.getElementById('play-emoji-stage');
+  stage.style.flexWrap = 'wrap'; stage.style.justifyContent = 'center'; stage.innerHTML = '';
+  pairs.forEach((emoji, i) => {
+    const card = document.createElement('span');
+    card.style.cssText = 'font-size:2em;cursor:pointer;margin:4px;min-width:45px;text-align:center;';
+    card.textContent = '?';
+    card.onclick = () => {
+      if (memLocked || memFlipped[i]) return;
+      memFlipped[i] = true; card.textContent = emoji; playSound('bell');
+      const flipped = memCards.map((e, j) => memFlipped[j] ? { j, e, el: card } : null).filter(Boolean);
+      if (flipped.length === 2) {
+        memLocked = true;
+        if (flipped[0].e === flipped[1].e) {
+          memMatched++; score += 10; coins += 5; playSound('perfect'); memLocked = false;
+          if (memMatched === 6) { document.getElementById('game-title').textContent = '🎉 All pairs found!'; score += 30; spawnConfetti(10); checkLevelUp(); }
+          updateUI();
+        } else {
+          playSound('wrong');
+          setTimeout(() => { flipped[0].el.textContent = '?'; flipped[1].el.textContent = '?'; memFlipped[flipped[0].j] = false; memFlipped[flipped[1].j] = false; memLocked = false; }, 700);
+        }
+      }
+    };
+    stage.appendChild(card);
+  });
+}
+
+// ============== RESTROOM ==============
+function washHands() {
+  playSound('bell');
+  document.getElementById('bath-msg').textContent = '✨ Clean hands! You feel refreshed! ✨';
+  spawnParticles(['💧','🫧','✨'], 6);
+  score += 2; updateUI();
+}
+
+function sprinkle() {
+  playSound('magic');
+  document.getElementById('bath-msg').textContent = '🌸 Fresh and fancy! 🌸';
+  spawnParticles(['🌸','✨','💫'], 6);
+  score += 2; updateUI();
+}
+
+// ============== ROOM INIT ==============
+function initRoom(roomId) {
+  switch(roomId) {
+    case 'kitchen': buildKitchenGrid(); renderKitchenOrders(); break;
+    case 'counter': renderQueue(); break;
+    case 'seating': renderSeating(); break;
+    case 'treasure': initTreasure(); break;
+    case 'paint': initArtStudio(); break;
+    case 'sounds': initSoundGrid(); break;
+    case 'garden': initGarden(); break;
+    case 'party': initParty(); break;
+    case 'pet': initPets(); break;
+    case 'library': initLibrary(); break;
+  }
+}
+
+// ============== NAVIGATION ==============
+function goToMap() {
+  document.querySelectorAll('.room-screen').forEach(s => s.classList.remove('active'));
+  currentRoom = null;
+  stopDisneySong();
+  if (danceInterval) { clearInterval(danceInterval); danceInterval = null; }
+}
+
+function enterRoom(roomId) {
+  currentRoom = roomId;
+  playSound('enter');
+  initRoom(roomId);
+  const screen = document.getElementById('screen-' + roomId);
+  if (screen) screen.classList.add('active');
+}
+
+// ============== GAME MAP ==============
+function buildMap() {
+  const floor = document.getElementById('store-floor');
+  floor.innerHTML = '';
+  const mapW = 100, mapH = 100;
+  cafeRooms.forEach(room => {
+    const tile = document.createElement('div');
+    tile.className = 'room-tile ' + room.cls;
+    tile.id = 'room-' + room.id;
+    tile.style.left = (room.x / mapW * 100) + '%';
+    tile.style.top = (room.y / mapH * 100) + '%';
+    tile.style.width = (room.w / mapW * 100) + '%';
+    tile.style.height = (room.h / mapH * 100) + '%';
+    tile.innerHTML = `<span class="room-emoji">${room.emoji}</span><span class="room-label">${room.label}</span>`;
+    tile.onclick = () => {
+      const dx = player.x - (room.x + room.w / 2);
+      const dy = player.y - (room.y + room.h / 2);
+      if (Math.sqrt(dx * dx + dy * dy) < 12) enterRoom(room.id);
+      else showMessage("Walk closer to enter!");
+    };
+    floor.appendChild(tile);
+  });
+}
+
+// ============== PLAYER RENDERING ==============
+function updatePlayerSprite() {
+  const canvas = document.getElementById('player');
+  const cont = document.getElementById('store-container');
+  drawCharacter(canvas, selectedChar, player.dir, spriteFrame);
+  canvas.style.left = (player.x / 100 * cont.clientWidth) + 'px';
+  canvas.style.top = (player.y / 100 * cont.clientHeight) + 'px';
+  canvas.style.width = (SPRITE_W * SCALE) + 'px';
+  canvas.style.height = (SPRITE_H * SCALE) + 'px';
+}
+
+// ============== MOVEMENT ==============
+function updateMovement() {
+  if (currentRoom) return;
+  let dx = 0, dy = 0;
+  if (keys['KeyA'] || keys['ArrowLeft']) dx -= 1;
+  if (keys['KeyD'] || keys['ArrowRight']) dx += 1;
+  if (keys['KeyW'] || keys['ArrowUp']) dy -= 1;
+  if (keys['KeyS'] || keys['ArrowDown']) dy += 1;
+
+  if (dx === 0 && dy === 0) { spriteFrame = 0; updatePlayerSprite(); checkNearbyRooms(); return; }
+
+  if (dx > 0) player.dir = 2;
+  else if (dx < 0) player.dir = 3;
+  else if (dy > 0) player.dir = 1;
+  else if (dy < 0) player.dir = 0;
+
+  const newX = player.x + dx * player.speed;
+  const newY = player.y + dy * player.speed;
+  if (newX >= 0 && newX <= 97 && newY >= 0 && newY <= 97) { player.x = newX; player.y = newY; }
+
+  spriteAnimTimer += 0.1;
+  if (spriteAnimTimer > 1) { spriteFrame = spriteFrame === 0 ? 1 : 0; spriteAnimTimer = 0; }
+  if (Math.random() < 0.15) playSound('step');
+  updatePlayerSprite();
+  checkNearbyRooms();
+}
+
+function checkNearbyRooms() {
+  let nearRoom = null, minDist = Infinity;
+  cafeRooms.forEach(room => {
+    const cx = room.x + room.w / 2, cy = room.y + room.h / 2;
+    const dist = Math.sqrt((player.x - cx) ** 2 + (player.y - cy) ** 2);
+    if (dist < 12 && dist < minDist) { minDist = dist; nearRoom = room; }
+  });
+  const hint = document.getElementById('interact-hint');
+  document.querySelectorAll('.room-tile').forEach(t => t.classList.remove('nearby'));
+  if (nearRoom) {
+    hint.style.display = 'block';
+    hint.textContent = 'Press E to enter ' + nearRoom.label + '!';
+    const tile = document.getElementById('room-' + nearRoom.id);
+    if (tile) tile.classList.add('nearby');
+  } else { hint.style.display = 'none'; }
+}
+
+// ============== INPUT ==============
+document.addEventListener('keydown', (e) => {
+  keys[e.code] = true;
+  if ((e.code === 'KeyE' || e.code === 'Space') && !currentRoom) {
+    const hint = document.getElementById('interact-hint');
+    if (hint.style.display === 'block') {
+      const nearTile = document.querySelector('.room-tile.nearby');
+      if (nearTile) enterRoom(nearTile.id.replace('room-', ''));
+    }
+  }
+  if (e.code === 'KeyF') {
+    const charEl = document.getElementById('player');
+    charEl.classList.add('dancing'); playSound('ding');
+    spawnParticles(['💃','🎵','🎶'], 4);
+    setTimeout(() => charEl.classList.remove('dancing'), 2000);
+  }
+});
+document.addEventListener('keyup', (e) => { keys[e.code] = false; });
+
+// ============== UI HELPERS ==============
+function updateUI() {
+  document.getElementById('score').textContent = score;
+  document.getElementById('coins').textContent = coins;
+  document.getElementById('level').textContent = level;
+}
+
+function showScorePopup(text) {
+  const popup = document.createElement('div');
+  popup.className = 'score-popup';
+  popup.textContent = text;
+  popup.style.left = (window.innerWidth / 2 - 60) + 'px';
+  popup.style.top = (window.innerHeight / 2 - 30) + 'px';
+  document.body.appendChild(popup);
+  setTimeout(() => popup.remove(), 1500);
+}
+
+function showMessage(text) {
+  const existing = document.querySelector('.message-popup');
+  if (existing) existing.remove();
+  const msg = document.createElement('div');
+  msg.className = 'message-popup';
+  msg.textContent = text;
+  document.body.appendChild(msg);
+  setTimeout(() => msg.remove(), 2500);
+}
+
+function spawnParticle(emoji) {
+  const p = document.createElement('div');
+  p.className = 'particle';
+  p.textContent = emoji;
+  p.style.left = Math.random() * window.innerWidth + 'px';
+  p.style.top = window.innerHeight * 0.5 + Math.random() * 200 + 'px';
+  document.body.appendChild(p);
+  setTimeout(() => p.remove(), 2000);
+}
+
+function spawnParticles(emojis, count) {
+  for (let i = 0; i < count; i++) setTimeout(() => spawnParticle(emojis[Math.floor(Math.random() * emojis.length)]), i * 100);
+}
+
+function spawnConfetti(count) {
+  const colors = ['#ff6b6b','#ffd93d','#4ecdc4','#a29bfe','#fd79a8','#55efc4','#ff9ff3'];
+  for (let i = 0; i < count; i++) setTimeout(() => {
+    const c = document.createElement('div');
+    c.className = 'confetti-piece';
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.left = Math.random() * window.innerWidth + 'px';
+    c.style.top = '-10px';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 2000);
+  }, i * 50);
+}
+
+let comboCount = 0;
+function addCombo() {
+  comboCount++;
+  const comboEl = document.getElementById('combo-display');
+  if (comboCount >= 3) { comboEl.textContent = comboCount + 'x COMBO!'; comboEl.classList.add('active'); score += comboCount * 2; }
+  setTimeout(() => { comboCount = 0; comboEl.classList.remove('active'); }, 5000);
+}
+
+function checkLevelUp() {
+  const needed = level * 50;
+  if (score >= needed) {
+    level++;
+    player.speed = Math.min(1.2, 0.6 + level * 0.05);
+    playSound('perfect');
+    spawnConfetti(25);
+    const banner = document.createElement('div');
+    banner.className = 'level-up-banner';
+    banner.textContent = 'LEVEL ' + level + '!';
+    document.body.appendChild(banner);
+    setTimeout(() => banner.remove(), 3000);
+    showMessage('🎉 Level up! Speed increased!');
+  }
+}
+
+// ============== START SCREEN ==============
+function buildStartScreen() {
+  const grid = document.getElementById('char-grid');
+  characters.forEach((char, i) => {
+    const opt = document.createElement('div');
+    opt.className = 'char-option' + (i === 0 ? ' selected' : '');
+    const canvas = document.createElement('canvas');
+    canvas.width = 64; canvas.height = 80;
+    drawMiniSprite(canvas, i);
+    const name = document.createElement('div');
+    name.className = 'char-name';
+    name.textContent = char.name;
+    opt.appendChild(canvas);
+    opt.appendChild(name);
+    opt.onclick = () => {
+      selectedChar = i;
+      grid.querySelectorAll('.char-option').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+    };
+    grid.appendChild(opt);
+  });
+}
+
+// ============== GAME START ==============
+function startGame() {
+  initAudio();
+  document.getElementById('start-screen').style.display = 'none';
+  document.getElementById('game-screen').style.display = 'flex';
+  document.getElementById('top-char').textContent = characters[selectedChar].name;
+
+  for (let i = 0; i < 3; i++) addCustomer();
+  setInterval(() => { if (!currentRoom && queueCustomers.length < 5) addCustomer(); }, 15000);
+
+  buildMap();
+  updatePlayerSprite();
+  startMusic();
+
+  function gameLoop() { updateMovement(); requestAnimationFrame(gameLoop); }
+  requestAnimationFrame(gameLoop);
+}
+
+// ============== INIT ==============
+buildStartScreen();
+initTreasure();
+initArtStudio();
+initSoundGrid();
+initGarden();
+initParty();
+initPets();
+initLibrary();
+
+window.addEventListener('resize', () => {
+  if (document.getElementById('game-screen').style.display !== 'none') { buildMap(); updatePlayerSprite(); }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh repo *)",
+      "Bash(command -v gh)",
+      "PowerShell(gh *)",
+      "Bash(git config *)",
+      "Read(//c/Users/cheri/**)",
+      "Read(//c/Users/cheri/.config/gh/**)",
+      "PowerShell(Get-ChildItem *)",
+      "Bash(git init *)",
+      "Bash(git checkout *)",
+      "Bash(/c/Program Files/GitHub CLI/gh repo *)",
+      "Bash(git remote *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git branch *)",
+      "Bash(git push *)"
+    ]
+  }
+}
