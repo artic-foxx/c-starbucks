@@ -70,7 +70,9 @@ Wander freely through a giant cafe with **16 interactive rooms**:
 
 ## Play
 
-Just open `starbucks-game.html` in your browser — no build tools, no dependencies, no setup.
+👉 **[Play now at artic-foxx.github.io/c-starbucks](https://artic-foxx.github.io/c-starbucks/)**
+
+Or open `starbucks-game.html` in your browser — no build tools, no dependencies, no setup.
 
 ```bash
 # That's it. Really.
