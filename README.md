@@ -12,6 +12,8 @@
 
 ## Preview
 
+![Gameplay Demo](starbucks-game-playthrough.gif)
+
 ```
     ☕  STARBUCKS ADVENTURE CAFE  ☕
   ┌─────────────────────────────────┐
